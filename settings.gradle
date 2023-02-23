@@ -1,0 +1,6 @@
+pluginManagement {
+    includeBuild '../gradle-plugins'
+}
+
+includeBuild '../formula'
+includeBuild '../bin-ddnnife'

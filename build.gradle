@@ -1,0 +1,16 @@
+plugins {
+    id 'java-library'
+    id 'de.featjar.java-application'
+}
+
+dependencies {
+    api 'de.featjar:formula'
+    api 'de.featjar:bin-ddnnife'
+}
+
+license {
+    ext {
+        author = 'Sebastian Krieter'
+        url = 'https://github.com/FeatJAR/formula-analysis-sharpsat'
+    }
+}

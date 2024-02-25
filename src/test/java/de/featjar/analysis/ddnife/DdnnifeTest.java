@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2023 Sebastian Krieter
+ * Copyright (C) 2024 FeatJAR-Development-Team
  *
- * This file is part of formula-analysis-ddnnife.
+ * This file is part of FeatJAR-formula-analysis-ddnnife.
  *
  * formula-analysis-ddnnife is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -16,86 +16,64 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with formula-analysis-ddnnife. If not, see <https://www.gnu.org/licenses/>.
  *
- * See <https://github.com/FeatJAR/formula-analysis-sharpsat> for further information.
+ * See <https://github.com/FeatJAR/formula-analysis-ddnnife> for further information.
  */
 package de.featjar.analysis.ddnife;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import de.featjar.analysis.ddnnife.CountSolutionsAnalysis;
-import de.featjar.formula.ModelRepresentation;
-import de.featjar.formula.structure.Formula;
-import de.featjar.formula.structure.Formulas;
-import de.featjar.formula.structure.atomic.literal.Literal;
-import de.featjar.formula.structure.atomic.literal.VariableMap;
-import de.featjar.formula.structure.compound.And;
-import de.featjar.formula.structure.compound.Biimplies;
-import de.featjar.formula.structure.compound.Implies;
-import de.featjar.formula.structure.compound.Or;
-import de.featjar.util.data.Result;
-import de.featjar.util.extension.ExtensionLoader;
-import de.featjar.util.logging.Logger;
+import de.featjar.Common;
+import de.featjar.analysis.ddnnife.ComputeSolutionCountDdnnife;
+import de.featjar.base.computation.Computations;
+import de.featjar.base.data.Result;
+import de.featjar.formula.analysis.bool.ComputeBooleanClauseList;
+import de.featjar.formula.structure.Expressions;
+import de.featjar.formula.structure.formula.IFormula;
+import de.featjar.formula.structure.formula.connective.And;
+import de.featjar.formula.structure.formula.connective.BiImplies;
+import de.featjar.formula.structure.formula.connective.Implies;
+import de.featjar.formula.structure.formula.connective.Or;
+import de.featjar.formula.structure.formula.predicate.Literal;
+import de.featjar.formula.transformer.ComputeCNFFormula;
+import de.featjar.formula.transformer.ComputeNNFFormula;
 import java.math.BigInteger;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 
-public class DdnnifeTest {
-
-    static {
-        ExtensionLoader.load();
-        Logger.setPrintStackTrace(true);
-    }
-
-    private static final Path modelDirectory = Paths.get("src/test/resources/testFeatureModels");
-
-    private static final List<String> modelNames = Arrays.asList( //
-            "basic", //
-            "simple", //
-            "car", //
-            "gpl_medium_model", //
-            "500-100");
-
-    private static ModelRepresentation load(final Path modelFile) {
-        return ModelRepresentation.load(modelFile) //
-                .orElseThrow(p -> new IllegalArgumentException(
-                        p.isEmpty() ? null : p.get(0).toException()));
-    }
+public class DdnnifeTest extends Common {
 
     @Test
     public void count() {
-        final VariableMap variables = new VariableMap();
-        final Literal a = variables.createLiteral("a");
-        final Literal b = variables.createLiteral("b");
-        final Literal c = variables.createLiteral("c");
+        final Literal a = Expressions.literal("a");
+        final Literal b = Expressions.literal("b");
+        final Literal c = Expressions.literal("c");
 
         final Implies implies1 = new Implies(a, b);
         final Or or = new Or(implies1, c);
-        final Biimplies equals = new Biimplies(a, b);
+        final BiImplies equals = new BiImplies(a, b);
         final And and = new And(equals, c);
-        final Implies formula = new Implies(or, and);
+        final IFormula formula = new Implies(or, and);
 
-        final Formula cnfFormula = Formulas.toCNF(formula).get();
-        final ModelRepresentation rep = new ModelRepresentation(cnfFormula);
-
-        final CountSolutionsAnalysis analysis = new CountSolutionsAnalysis();
-        final Result<?> result = rep.getResult(analysis);
-        result.orElse(Logger::logProblems);
-        assertTrue(result.isPresent());
+        final Result<BigInteger> result = Computations.of(formula)
+                .map(ComputeNNFFormula::new)
+                .map(ComputeCNFFormula::new)
+                .map(ComputeBooleanClauseList::new)
+                .map(ComputeSolutionCountDdnnife::new)
+                .computeResult();
+        assertTrue(result.isPresent(), result::printProblems);
         assertEquals(BigInteger.valueOf(3), result.get());
     }
 
     @Test
     public void count2() {
-        final ModelRepresentation rep = load(modelDirectory.resolve(modelNames.get(3) + ".xml"));
-
-        final CountSolutionsAnalysis analysis = new CountSolutionsAnalysis();
-        final Result<?> result = rep.getResult(analysis);
-        result.orElse(Logger::logProblems);
-        assertTrue(result.isPresent());
+        final IFormula formula = loadFormula("testFeatureModels/gpl_medium_model.xml");
+        final Result<BigInteger> result = Computations.of(formula)
+                .map(ComputeNNFFormula::new)
+                .map(ComputeCNFFormula::new)
+                .map(ComputeBooleanClauseList::new)
+                .map(ComputeSolutionCountDdnnife::new)
+                .computeResult();
+        assertTrue(result.isPresent(), result::printProblems);
         assertEquals(BigInteger.valueOf(960), result.get());
     }
 }

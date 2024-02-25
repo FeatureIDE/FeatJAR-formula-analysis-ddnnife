@@ -1,16 +1,16 @@
 plugins {
-    id 'java-library'
+    id 'de.featjar.java-library'
     id 'de.featjar.java-application'
 }
 
 dependencies {
     api 'de.featjar:formula'
     api 'de.featjar:bin-ddnnife'
+    implementation testFixtures('de.featjar:formula')
 }
 
 license {
     ext {
-        author = 'Sebastian Krieter'
-        url = 'https://github.com/FeatJAR/formula-analysis-sharpsat'
+        licence_url = 'https://github.com/FeatJAR/formula-analysis-ddnnife'
     }
 }

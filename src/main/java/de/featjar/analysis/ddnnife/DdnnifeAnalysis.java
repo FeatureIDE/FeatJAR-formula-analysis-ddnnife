@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2023 Sebastian Krieter
+ * Copyright (C) 2024 FeatJAR-Development-Team
  *
- * This file is part of formula-analysis-ddnnife.
+ * This file is part of FeatJAR-formula-analysis-ddnnife.
  *
  * formula-analysis-ddnnife is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -16,15 +16,21 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with formula-analysis-ddnnife. If not, see <https://www.gnu.org/licenses/>.
  *
- * See <https://github.com/FeatJAR/formula-analysis-sharpsat> for further information.
+ * See <https://github.com/FeatJAR/formula-analysis-ddnnife> for further information.
  */
 package de.featjar.analysis.ddnnife;
 
-import de.featjar.analysis.AbstractAnalysis;
 import de.featjar.analysis.ddnnife.solver.DdnnifeWrapper;
-import de.featjar.analysis.solver.SharpSatSolver;
-import de.featjar.formula.structure.Formula;
-import de.featjar.formula.structure.FormulaProvider;
+import de.featjar.base.FeatJAR;
+import de.featjar.base.computation.AComputation;
+import de.featjar.base.computation.Computations;
+import de.featjar.base.computation.Dependency;
+import de.featjar.base.computation.IComputation;
+import de.featjar.formula.analysis.bool.ABooleanAssignment;
+import de.featjar.formula.analysis.bool.BooleanAssignment;
+import de.featjar.formula.analysis.bool.BooleanClauseList;
+import java.time.Duration;
+import java.util.List;
 
 /**
  * Base class for analyses using a {@link SharpSatSolver}.
@@ -33,20 +39,36 @@ import de.featjar.formula.structure.FormulaProvider;
  *
  * @author Sebastian Krieter
  */
-public abstract class DdnnifeAnalysis<T> extends AbstractAnalysis<T, DdnnifeWrapper, Formula> {
+public abstract class DdnnifeAnalysis<T> extends AComputation<T> {
+    public static final Dependency<BooleanClauseList> BOOLEAN_CLAUSE_LIST =
+            Dependency.newDependency(BooleanClauseList.class);
+    public static final Dependency<ABooleanAssignment> ASSUMED_ASSIGNMENT =
+            Dependency.newDependency(ABooleanAssignment.class);
+    public static final Dependency<Duration> SAT_TIMEOUT = Dependency.newDependency(Duration.class);
 
-    public DdnnifeAnalysis() {
-        super();
-        solverInputProvider = FormulaProvider.empty();
+    public DdnnifeAnalysis(IComputation<BooleanClauseList> booleanClauseList, Object... computations) {
+        super(
+                booleanClauseList,
+                Computations.of(new BooleanAssignment()),
+                Computations.of(Duration.ZERO),
+                computations);
     }
 
-    @Override
-    protected DdnnifeWrapper createSolver(Formula input) {
-        return new DdnnifeWrapper(input);
+    protected DdnnifeAnalysis(DdnnifeAnalysis<T> other) {
+        super(other);
     }
 
-    @Override
-    protected void prepareSolver(DdnnifeWrapper solver) {
-        super.prepareSolver(solver);
+    public DdnnifeWrapper initializeSolver(List<Object> dependencyList) {
+        BooleanClauseList clauseList = BOOLEAN_CLAUSE_LIST.get(dependencyList);
+        ABooleanAssignment assumedAssignment = ASSUMED_ASSIGNMENT.get(dependencyList);
+        Duration timeout = SAT_TIMEOUT.get(dependencyList);
+        FeatJAR.log().debug("initializing SAT4J");
+        FeatJAR.log().debug("clauses %s", clauseList);
+        FeatJAR.log().debug("assuming %s", assumedAssignment);
+
+        DdnnifeWrapper solver = new DdnnifeWrapper(clauseList);
+        solver.setAssumptions(assumedAssignment);
+        solver.setTimeout(timeout);
+        return solver;
     }
 }

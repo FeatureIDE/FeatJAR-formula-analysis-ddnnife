@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2023 Sebastian Krieter
+ * Copyright (C) 2024 FeatJAR-Development-Team
  *
- * This file is part of formula-analysis-ddnnife.
+ * This file is part of FeatJAR-formula-analysis-ddnnife.
  *
  * formula-analysis-ddnnife is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -16,28 +16,21 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with formula-analysis-ddnnife. If not, see <https://www.gnu.org/licenses/>.
  *
- * See <https://github.com/FeatJAR/formula-analysis-sharpsat> for further information.
+ * See <https://github.com/FeatJAR/formula-analysis-ddnnife> for further information.
  */
 package de.featjar.analysis.ddnnife.solver;
 
-import de.featjar.analysis.solver.DynamicFormula;
-import de.featjar.analysis.solver.SharpSatSolver;
-import de.featjar.analysis.solver.SolutionSolver;
+import de.featjar.base.FeatJAR;
+import de.featjar.base.data.Result;
+import de.featjar.base.io.IO;
 import de.featjar.bin.ddnnife.D4Binary;
 import de.featjar.bin.ddnnife.DdnnifeBinary;
-import de.featjar.clauses.LiteralList;
-import de.featjar.clauses.LiteralList.Order;
-import de.featjar.formula.ModelRepresentation;
-import de.featjar.formula.io.dimacs.DIMACSFormat;
-import de.featjar.formula.structure.Formula;
-import de.featjar.formula.structure.FormulaProvider.CNF;
-import de.featjar.formula.structure.atomic.Assignment;
-import de.featjar.formula.structure.atomic.VariableAssignment;
-import de.featjar.formula.structure.atomic.literal.VariableMap;
-import de.featjar.util.data.Pair;
-import de.featjar.util.data.Result;
-import de.featjar.util.io.IO;
-import de.featjar.util.logging.Logger;
+import de.featjar.formula.analysis.ISolver;
+import de.featjar.formula.analysis.bool.ABooleanAssignment;
+import de.featjar.formula.analysis.bool.BooleanAssignment;
+import de.featjar.formula.analysis.bool.BooleanClauseList;
+import de.featjar.formula.analysis.bool.BooleanSolution;
+import de.featjar.formula.io.dimacs.CnfDimacsFormat;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.Closeable;
@@ -47,12 +40,14 @@ import java.io.OutputStreamWriter;
 import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-public class DdnnifeWrapper implements SolutionSolver<LiteralList>, SharpSatSolver {
+public class DdnnifeWrapper implements ISolver, AutoCloseable {
+
+    protected Duration timeout = Duration.ZERO;
 
     private Process process;
 
@@ -61,31 +56,30 @@ public class DdnnifeWrapper implements SolutionSolver<LiteralList>, SharpSatSolv
 
     private Path ddnifeFile;
 
-    private final VariableAssignment assumptions;
-    private final VariableMap variables;
+    private ABooleanAssignment assumptions;
 
-    public DdnnifeWrapper(Formula formula) {
-        variables = formula.getVariableMap().orElseGet(VariableMap::new);
-        assumptions = new VariableAssignment(variables);
-
-        int features = variables.getVariableCount();
+    public DdnnifeWrapper(BooleanClauseList formula) {
+        int features = formula.getVariableCount();
         try {
             Path d4File = Files.createTempFile("d4Input", ".dimacs");
 
             ddnifeFile = Files.createTempFile("ddnnifeInput", ".nnf");
             d4File.toFile().deleteOnExit();
             ddnifeFile.toFile().deleteOnExit();
-            IO.save(new ModelRepresentation(formula).get(CNF.fromFormula()), d4File, new DIMACSFormat());
 
-            Process start = new ProcessBuilder(
-                            new D4Binary().getPath().toString(),
-                            "-i",
-                            d4File.toString(),
-                            "-m",
-                            "ddnnf-compiler",
-                            "--dump-ddnnf",
-                            ddnifeFile.toString())
-                    .start();
+            IO.save(formula, d4File, new CnfDimacsFormat());
+
+            D4Binary extension = FeatJAR.extension(D4Binary.class);
+            ProcessBuilder processBuilder = new ProcessBuilder(
+                    extension.getExecutablePath().toString(),
+                    "-i",
+                    d4File.toString(),
+                    "-m",
+                    "ddnnf-compiler",
+                    "--dump-ddnnf",
+                    ddnifeFile.toString());
+            FeatJAR.log().debug(() -> String.join(" ", processBuilder.command()));
+            Process start = processBuilder.start();
             start.waitFor();
             Files.deleteIfExists(d4File);
 
@@ -94,31 +88,36 @@ public class DdnnifeWrapper implements SolutionSolver<LiteralList>, SharpSatSolv
             prcOut = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
 
             if (prcIn.ready()) {
-                Logger.logError(prcIn.lines().reduce("", (s1, s2) -> s1 + s2 + "\n"));
-                endProcess();
+                FeatJAR.log().error(prcIn.lines().reduce("", (s1, s2) -> s1 + s2 + "\n"));
+                close();
             }
-        } catch (IOException | InterruptedException e) {
-            Logger.logError(e);
-            endProcess();
+        } catch (Exception e) {
+            FeatJAR.log().error(e);
+            try {
+                close();
+            } catch (Exception e1) {
+                FeatJAR.log().error(e);
+            }
         }
     }
 
     private Process startProcess(Path ddnifeFile, int features) {
         try {
             if (features > -1) {
+                DdnnifeBinary extension = FeatJAR.extension(DdnnifeBinary.class);
                 return new ProcessBuilder(
-                                new DdnnifeBinary().getPath().toString(),
+                                extension.getExecutablePath().toString(),
                                 ddnifeFile.toString(),
                                 "-o",
                                 Integer.toString(features),
                                 "--stream")
                         .start();
             } else {
-                return new ProcessBuilder(new DdnnifeBinary().getPath().toString(), ddnifeFile.toString(), "--stream")
+                return new ProcessBuilder(new DdnnifeBinary().getExecutableName(), ddnifeFile.toString(), "--stream")
                         .start();
             }
         } catch (IOException e) {
-            Logger.logError(e);
+            FeatJAR.log().error(e);
             return null;
         }
     }
@@ -137,7 +136,81 @@ public class DdnnifeWrapper implements SolutionSolver<LiteralList>, SharpSatSolv
         }
     }
 
-    public void endProcess() {
+    private static void closeStream(Closeable stream) {
+        if (stream != null) {
+            try {
+                stream.close();
+            } catch (IOException e) {
+                FeatJAR.log().error(e);
+            }
+        }
+    }
+
+    public Result<Boolean> hasSolution() {
+        StringBuilder sb = new StringBuilder("sat");
+        writeAssumptions(sb);
+        return compute(sb.toString()).map("true"::equalsIgnoreCase);
+    }
+
+    public Result<BooleanSolution> getSolution() {
+        StringBuilder sb = new StringBuilder("enum l 1");
+        writeAssumptions(sb);
+        return compute(sb.toString())
+                .map(s -> new BooleanSolution(Arrays.stream(s.split("\\w+"))
+                        .mapToInt(Integer::parseInt)
+                        .toArray()));
+    }
+
+    public Result<BigInteger> countSolutions() {
+        StringBuilder sb = new StringBuilder("count");
+        writeAssumptions(sb);
+        return compute(sb.toString()).map(BigInteger::new);
+    }
+
+    public Result<BooleanAssignment> core() {
+        StringBuilder sb = new StringBuilder("core");
+        writeAssumptions(sb);
+        return compute(sb.toString())
+                .map(s -> new BooleanAssignment(Arrays.stream(s.split("\\w+"))
+                        .mapToInt(Integer::parseInt)
+                        .toArray()));
+    }
+
+    private void writeAssumptions(StringBuilder sb) {
+        if (assumptions != null && !assumptions.isEmpty()) {
+            sb.append(" a");
+            for (int assumption : assumptions.get()) {
+                sb.append(assumption);
+            }
+        }
+    }
+
+    public ABooleanAssignment getAssumptions() {
+        return assumptions;
+    }
+
+    public void setAssumptions(ABooleanAssignment assumptions) {
+        this.assumptions = assumptions;
+    }
+
+    public Duration getTimeout() {
+        return timeout;
+    }
+
+    public void setTimeout(Duration timeout) {
+        Objects.requireNonNull(timeout);
+        FeatJAR.log().debug("setting timeout to " + timeout);
+        this.timeout = timeout;
+    }
+
+    @Override
+    public boolean isTimeoutOccurred() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public void close() throws Exception {
         try {
             if (process != null && process.isAlive()) {
                 prcOut.write("exit\n");
@@ -145,158 +218,19 @@ public class DdnnifeWrapper implements SolutionSolver<LiteralList>, SharpSatSolv
                 process.waitFor(1000, TimeUnit.MILLISECONDS);
             }
         } catch (IOException | InterruptedException e) {
-            Logger.logError(e);
+            FeatJAR.log().error(e);
         } finally {
             closeStream(prcIn);
             closeStream(prcOut);
             try {
                 Files.deleteIfExists(ddnifeFile);
             } catch (IOException e) {
-                Logger.logError(e);
+                FeatJAR.log().error(e);
             }
             if (process != null) {
                 process.destroyForcibly();
+                process = null;
             }
-        }
-    }
-
-    private static void closeStream(Closeable stream) {
-        if (stream != null) {
-            try {
-                stream.close();
-            } catch (IOException e) {
-                Logger.logError(e);
-            }
-        }
-    }
-
-    @Override
-    public Assignment getAssumptions() {
-        return assumptions;
-    }
-
-    @Override
-    public DynamicFormula<?> getDynamicFormula() {
-        return new DynamicFormula<Object>() {
-
-            @Override
-            public List<Object> getConstraints() {
-                return Collections.emptyList();
-            }
-
-            @Override
-            public VariableMap getVariableMap() {
-                return variables;
-            }
-
-            @Override
-            public List<Object> push(Formula clause) {
-                return Collections.emptyList();
-            }
-
-            @Override
-            public Object peek() {
-                return null;
-            }
-
-            @Override
-            public Object pop() {
-                return null;
-            }
-
-            @Override
-            public int size() {
-                return 0;
-            }
-
-            @Override
-            public void remove(Object constraint) {}
-        };
-    }
-
-    @Override
-    public VariableMap getVariables() {
-        return variables;
-    }
-
-    @Override
-    public SatResult hasSolution() {
-        StringBuilder sb = new StringBuilder("sat");
-        List<Pair<Integer, Object>> all = assumptions.getAll();
-        if (!all.isEmpty()) {
-            sb.append(" a");
-            for (Pair<Integer, Object> assumption : all) {
-                sb.append((boolean) assumption.getValue() ? assumption.getKey() : -assumption.getKey());
-            }
-        }
-        Result<String> compute = compute(sb.toString());
-        if (compute.isPresent()) {
-            if ("true".equalsIgnoreCase(compute.get())) {
-                return SatResult.TRUE;
-            } else {
-                return SatResult.FALSE;
-            }
-        } else {
-            return SatResult.TIMEOUT;
-        }
-    }
-
-    @Override
-    public LiteralList getSolution() {
-        StringBuilder sb = new StringBuilder("enum l 1");
-        List<Pair<Integer, Object>> all = assumptions.getAll();
-        if (!all.isEmpty()) {
-            sb.append(" a");
-            for (Pair<Integer, Object> assumption : all) {
-                sb.append((boolean) assumption.getValue() ? assumption.getKey() : -assumption.getKey());
-            }
-        }
-        Result<String> compute = compute(sb.toString());
-        if (compute.isPresent()) {
-            int[] array = Arrays.stream(compute.get().split("\\w+"))
-                    .mapToInt(Integer::parseInt)
-                    .toArray();
-            return new LiteralList(array, Order.INDEX, false);
-        } else {
-            return null;
-        }
-    }
-
-    @Override
-    public BigInteger countSolutions() {
-        StringBuilder sb = new StringBuilder("count");
-        List<Pair<Integer, Object>> all = assumptions.getAll();
-        if (!all.isEmpty()) {
-            sb.append(" a");
-            for (Pair<Integer, Object> assumption : all) {
-                sb.append((boolean) assumption.getValue() ? assumption.getKey() : -assumption.getKey());
-            }
-        }
-        Result<String> compute = compute(sb.toString());
-        if (compute.isPresent()) {
-            return new BigInteger(compute.get());
-        } else {
-            return null;
-        }
-    }
-
-    public LiteralList core() {
-        StringBuilder sb = new StringBuilder("core");
-        List<Pair<Integer, Object>> all = assumptions.getAll();
-        if (!all.isEmpty()) {
-            sb.append(" a");
-            for (Pair<Integer, Object> assumption : all) {
-                sb.append((boolean) assumption.getValue() ? assumption.getKey() : -assumption.getKey());
-            }
-        }
-        Result<String> compute = compute(sb.toString());
-        if (compute.isPresent()) {
-            int[] array = Arrays.stream(compute.get().split("\\w+"))
-                    .mapToInt(Integer::parseInt)
-                    .toArray();
-            return new LiteralList(array, Order.NATURAL);
-        } else {
-            return null;
         }
     }
 }

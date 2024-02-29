@@ -58,6 +58,7 @@ public class DdnnifeTest extends Common {
                 .map(ComputeNNFFormula::new)
                 .map(ComputeCNFFormula::new)
                 .map(ComputeBooleanClauseList::new)
+                .map(Computations::getKey)
                 .map(ComputeSolutionCountDdnnife::new)
                 .computeResult();
         assertTrue(result.isPresent(), result::printProblems);
@@ -71,6 +72,7 @@ public class DdnnifeTest extends Common {
                 .map(ComputeNNFFormula::new)
                 .map(ComputeCNFFormula::new)
                 .map(ComputeBooleanClauseList::new)
+                .map(Computations::getKey)
                 .map(ComputeSolutionCountDdnnife::new)
                 .computeResult();
         assertTrue(result.isPresent(), result::printProblems);

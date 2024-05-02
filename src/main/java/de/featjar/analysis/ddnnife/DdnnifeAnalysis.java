@@ -33,7 +33,7 @@ import java.time.Duration;
 import java.util.List;
 
 /**
- * Base class for analyses using a {@link SharpSatSolver}.
+ * Base class for analyses using a SharpSat Solver.
  *
  * @param <T> Type of the analysis result.
  *

@@ -24,10 +24,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import de.featjar.Common;
+import de.featjar.analysis.ddnnife.ComputeDdnnifeWrapper;
 import de.featjar.analysis.ddnnife.ComputeSolutionCountDdnnife;
 import de.featjar.base.computation.Computations;
 import de.featjar.base.data.Result;
-import de.featjar.formula.analysis.bool.ComputeBooleanClauseList;
+import de.featjar.formula.analysis.bool.ComputeBooleanRepresentation;
 import de.featjar.formula.structure.Expressions;
 import de.featjar.formula.structure.formula.IFormula;
 import de.featjar.formula.structure.formula.connective.And;
@@ -35,8 +36,8 @@ import de.featjar.formula.structure.formula.connective.BiImplies;
 import de.featjar.formula.structure.formula.connective.Implies;
 import de.featjar.formula.structure.formula.connective.Or;
 import de.featjar.formula.structure.formula.predicate.Literal;
-import de.featjar.formula.transform.ComputeCNFFormula;
-import de.featjar.formula.transform.ComputeNNFFormula;
+import de.featjar.formula.transformer.ComputeCNFFormula;
+import de.featjar.formula.transformer.ComputeNNFFormula;
 import java.math.BigInteger;
 import org.junit.jupiter.api.Test;
 
@@ -57,8 +58,8 @@ public class DdnnifeTest extends Common {
         final Result<BigInteger> result = Computations.of(formula)
                 .map(ComputeNNFFormula::new)
                 .map(ComputeCNFFormula::new)
-                .map(ComputeBooleanClauseList::new)
-                .map(Computations::getKey)
+                .map(ComputeBooleanRepresentation::new)
+                .map(ComputeDdnnifeWrapper::new)
                 .map(ComputeSolutionCountDdnnife::new)
                 .computeResult();
         assertTrue(result.isPresent(), result::printProblems);
@@ -71,8 +72,8 @@ public class DdnnifeTest extends Common {
         final Result<BigInteger> result = Computations.of(formula)
                 .map(ComputeNNFFormula::new)
                 .map(ComputeCNFFormula::new)
-                .map(ComputeBooleanClauseList::new)
-                .map(Computations::getKey)
+                .map(ComputeBooleanRepresentation::new)
+                .map(ComputeDdnnifeWrapper::new)
                 .map(ComputeSolutionCountDdnnife::new)
                 .computeResult();
         assertTrue(result.isPresent(), result::printProblems);

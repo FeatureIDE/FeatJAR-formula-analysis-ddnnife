@@ -28,9 +28,9 @@ import de.featjar.bin.ddnnife.DdnnifeBinary;
 import de.featjar.formula.analysis.ISolver;
 import de.featjar.formula.analysis.bool.ABooleanAssignment;
 import de.featjar.formula.analysis.bool.BooleanAssignment;
-import de.featjar.formula.analysis.bool.BooleanClauseList;
+import de.featjar.formula.analysis.bool.BooleanAssignmentGroups;
 import de.featjar.formula.analysis.bool.BooleanSolution;
-import de.featjar.formula.io.dimacs.CnfDimacsFormat;
+import de.featjar.formula.io.dimacs.BooleanAssignmentGroupsDimacsFormat;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.Closeable;
@@ -44,6 +44,7 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class DdnnifeWrapper implements ISolver, AutoCloseable {
 
@@ -58,47 +59,47 @@ public class DdnnifeWrapper implements ISolver, AutoCloseable {
 
     private ABooleanAssignment assumptions;
 
-    public DdnnifeWrapper(BooleanClauseList formula) {
-        int features = formula.getVariableCount();
+    public DdnnifeWrapper(BooleanAssignmentGroups formula) throws Exception {
+        int features = formula.getVariableMap().getVariableCount();
         try {
-            Path d4File = Files.createTempFile("d4Input", ".dimacs");
-
             ddnifeFile = Files.createTempFile("ddnnifeInput", ".nnf");
-            d4File.toFile().deleteOnExit();
             ddnifeFile.toFile().deleteOnExit();
 
-            IO.save(formula, d4File, new CnfDimacsFormat());
-
-            D4Binary extension = FeatJAR.extension(D4Binary.class);
-            ProcessBuilder processBuilder = new ProcessBuilder(
-                    extension.getExecutablePath().toString(),
-                    "-i",
-                    d4File.toString(),
-                    "-m",
-                    "ddnnf-compiler",
-                    "--dump-ddnnf",
-                    ddnifeFile.toString());
-            FeatJAR.log().debug(() -> String.join(" ", processBuilder.command()));
-            Process start = processBuilder.start();
-            start.waitFor();
-            Files.deleteIfExists(d4File);
+            computeDdnnf(formula);
 
             process = startProcess(ddnifeFile, features);
             prcIn = new BufferedReader(new InputStreamReader(process.getInputStream()));
             prcOut = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
 
             if (prcIn.ready()) {
-                FeatJAR.log().error(prcIn.lines().reduce("", (s1, s2) -> s1 + s2 + "\n"));
+                RuntimeException e = new RuntimeException(prcIn.lines().collect(Collectors.joining("\n")));
                 close();
+                throw e;
             }
         } catch (Exception e) {
-            FeatJAR.log().error(e);
-            try {
-                close();
-            } catch (Exception e1) {
-                FeatJAR.log().error(e);
-            }
+            close();
+            throw e;
         }
+    }
+
+    private void computeDdnnf(BooleanAssignmentGroups formula) throws IOException, InterruptedException {
+        Path d4File = Files.createTempFile("d4Input", ".dimacs");
+        d4File.toFile().deleteOnExit();
+
+        IO.save(formula, d4File, new BooleanAssignmentGroupsDimacsFormat());
+
+        D4Binary extension = FeatJAR.extension(D4Binary.class);
+        ProcessBuilder processBuilder = new ProcessBuilder(
+                extension.getExecutablePath().toString(),
+                "-i",
+                d4File.toString(),
+                "-m",
+                "ddnnf-compiler",
+                "--dump-ddnnf",
+                ddnifeFile.toString());
+        FeatJAR.log().debug(() -> String.join(" ", processBuilder.command()));
+        processBuilder.start().waitFor();
+        Files.deleteIfExists(d4File);
     }
 
     private Process startProcess(Path ddnifeFile, int features) {

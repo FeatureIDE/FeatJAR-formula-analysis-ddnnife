@@ -21,10 +21,13 @@
 package de.featjar.analysis.ddnnife;
 
 import de.featjar.analysis.ddnnife.solver.DdnnifeWrapper;
+import de.featjar.base.FeatJAR;
+import de.featjar.base.computation.AComputation;
+import de.featjar.base.computation.Dependency;
 import de.featjar.base.computation.IComputation;
 import de.featjar.base.computation.Progress;
 import de.featjar.base.data.Result;
-import java.math.BigInteger;
+import de.featjar.formula.analysis.bool.BooleanAssignmentGroups;
 import java.util.List;
 
 /**
@@ -32,18 +35,28 @@ import java.util.List;
  *
  * @author Sebastian Krieter
  */
-public class ComputeSolutionCountDdnnife extends DdnnifeAnalysis<BigInteger> {
+public final class ComputeDdnnifeWrapper extends AComputation<DdnnifeWrapper> {
+    public static final Dependency<BooleanAssignmentGroups> FORMULA =
+            Dependency.newDependency(BooleanAssignmentGroups.class);
 
-    public ComputeSolutionCountDdnnife(IComputation<DdnnifeWrapper> ddnnifeWrapper) {
-        super(ddnnifeWrapper);
+    public ComputeDdnnifeWrapper(IComputation<BooleanAssignmentGroups> booleanClauseList) {
+        super(booleanClauseList);
     }
 
-    protected ComputeSolutionCountDdnnife(ComputeSolutionCountDdnnife other) {
+    protected ComputeDdnnifeWrapper(ComputeDdnnifeWrapper other) {
         super(other);
     }
 
     @Override
-    public Result<BigInteger> compute(List<Object> dependencyList, Progress progress) {
-        return initializeSolver(dependencyList).countSolutions();
+    public Result<DdnnifeWrapper> compute(List<Object> dependencyList, Progress progress) {
+        BooleanAssignmentGroups booleanClauseList = FORMULA.get(dependencyList);
+        FeatJAR.log().debug("initializing SAT4J");
+        FeatJAR.log().debug("clauses %s", booleanClauseList);
+
+        try {
+            return Result.of(new DdnnifeWrapper(booleanClauseList));
+        } catch (Exception e) {
+            return Result.empty(e);
+        }
     }
 }

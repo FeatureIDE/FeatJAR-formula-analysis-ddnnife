@@ -25,7 +25,6 @@ import de.featjar.base.computation.IComputation;
 import de.featjar.base.computation.Progress;
 import de.featjar.base.data.Result;
 import de.featjar.formula.analysis.bool.BooleanAssignment;
-import de.featjar.formula.analysis.bool.BooleanClauseList;
 import java.util.List;
 
 /**
@@ -35,8 +34,8 @@ import java.util.List;
  */
 public class ComputeCoreDeadDdnnife extends DdnnifeAnalysis<BooleanAssignment> {
 
-    public ComputeCoreDeadDdnnife(IComputation<BooleanClauseList> booleanClauseList) {
-        super(booleanClauseList);
+    public ComputeCoreDeadDdnnife(IComputation<DdnnifeWrapper> ddnnifeWrapper) {
+        super(ddnnifeWrapper);
     }
 
     protected ComputeCoreDeadDdnnife(ComputeCoreDeadDdnnife other) {
@@ -45,10 +44,6 @@ public class ComputeCoreDeadDdnnife extends DdnnifeAnalysis<BooleanAssignment> {
 
     @Override
     public Result<BooleanAssignment> compute(List<Object> dependencyList, Progress progress) {
-        try (DdnnifeWrapper solver = initializeSolver(dependencyList)) {
-            return solver.core();
-        } catch (Exception e) {
-            return Result.empty(e);
-        }
+        return initializeSolver(dependencyList).core();
     }
 }

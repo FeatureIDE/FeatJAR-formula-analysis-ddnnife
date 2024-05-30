@@ -18,32 +18,34 @@
  *
  * See <https://github.com/FeatJAR/formula-analysis-ddnnife> for further information.
  */
-package de.featjar.analysis.ddnnife;
+package de.featjar.analysis.ddnnife.cli;
 
-import de.featjar.analysis.ddnnife.solver.DdnnifeWrapper;
+import de.featjar.analysis.ddnnife.ComputeDdnnifeWrapper;
+import de.featjar.analysis.ddnnife.ComputeSolutionDdnnife;
 import de.featjar.base.computation.IComputation;
-import de.featjar.base.computation.Progress;
-import de.featjar.base.data.Result;
-import java.math.BigInteger;
-import java.util.List;
+import de.featjar.formula.analysis.bool.BooleanAssignment;
+import de.featjar.formula.analysis.bool.BooleanSolution;
+import java.util.Optional;
 
-/**
- * Counts the number of valid solutions to a formula.
- *
- * @author Sebastian Krieter
- */
-public class ComputeSolutionCountDdnnife extends DdnnifeAnalysis<BigInteger> {
+public class SolutionCommand extends ADdnnifeAnalysisCommand<BooleanSolution, BooleanAssignment> {
 
-    public ComputeSolutionCountDdnnife(IComputation<DdnnifeWrapper> ddnnifeWrapper) {
-        super(ddnnifeWrapper);
-    }
-
-    protected ComputeSolutionCountDdnnife(ComputeSolutionCountDdnnife other) {
-        super(other);
+    @Override
+    public Optional<String> getDescription() {
+        return Optional.of("Computes a solution for a given formula using ddnnife");
     }
 
     @Override
-    public Result<BigInteger> compute(List<Object> dependencyList, Progress progress) {
-        return initializeSolver(dependencyList).countSolutions();
+    public IComputation<BooleanSolution> newAnalysis(ComputeDdnnifeWrapper formula) {
+        return formula.map(ComputeSolutionDdnnife::new);
+    }
+
+    @Override
+    public String serializeResult(BooleanSolution assignment) {
+        return assignment.print();
+    }
+
+    @Override
+    public Optional<String> getShortName() {
+        return Optional.of("solution-ddnnife");
     }
 }

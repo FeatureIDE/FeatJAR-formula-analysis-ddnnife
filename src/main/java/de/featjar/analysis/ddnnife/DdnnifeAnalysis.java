@@ -28,7 +28,6 @@ import de.featjar.base.computation.Dependency;
 import de.featjar.base.computation.IComputation;
 import de.featjar.formula.analysis.bool.ABooleanAssignment;
 import de.featjar.formula.analysis.bool.BooleanAssignment;
-import de.featjar.formula.analysis.bool.BooleanClauseList;
 import java.time.Duration;
 import java.util.List;
 
@@ -40,18 +39,13 @@ import java.util.List;
  * @author Sebastian Krieter
  */
 public abstract class DdnnifeAnalysis<T> extends AComputation<T> {
-    public static final Dependency<BooleanClauseList> BOOLEAN_CLAUSE_LIST =
-            Dependency.newDependency(BooleanClauseList.class);
+    public static final Dependency<DdnnifeWrapper> DDNNIFE_WRAPPER = Dependency.newDependency(DdnnifeWrapper.class);
     public static final Dependency<ABooleanAssignment> ASSUMED_ASSIGNMENT =
             Dependency.newDependency(ABooleanAssignment.class);
     public static final Dependency<Duration> SAT_TIMEOUT = Dependency.newDependency(Duration.class);
 
-    public DdnnifeAnalysis(IComputation<BooleanClauseList> booleanClauseList, Object... computations) {
-        super(
-                booleanClauseList,
-                Computations.of(new BooleanAssignment()),
-                Computations.of(Duration.ZERO),
-                computations);
+    public DdnnifeAnalysis(IComputation<DdnnifeWrapper> ddnnifeWrapper, Object... computations) {
+        super(ddnnifeWrapper, Computations.of(new BooleanAssignment()), Computations.of(Duration.ZERO), computations);
     }
 
     protected DdnnifeAnalysis(DdnnifeAnalysis<T> other) {
@@ -59,14 +53,10 @@ public abstract class DdnnifeAnalysis<T> extends AComputation<T> {
     }
 
     public DdnnifeWrapper initializeSolver(List<Object> dependencyList) {
-        BooleanClauseList clauseList = BOOLEAN_CLAUSE_LIST.get(dependencyList);
+        DdnnifeWrapper solver = DDNNIFE_WRAPPER.get(dependencyList);
         ABooleanAssignment assumedAssignment = ASSUMED_ASSIGNMENT.get(dependencyList);
         Duration timeout = SAT_TIMEOUT.get(dependencyList);
-        FeatJAR.log().debug("initializing SAT4J");
-        FeatJAR.log().debug("clauses %s", clauseList);
         FeatJAR.log().debug("assuming %s", assumedAssignment);
-
-        DdnnifeWrapper solver = new DdnnifeWrapper(clauseList);
         solver.setAssumptions(assumedAssignment);
         solver.setTimeout(timeout);
         return solver;

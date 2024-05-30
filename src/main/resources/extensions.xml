@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<extensions>
+	<point id="de.featjar.base.cli.Commands">
+		<extension id="de.featjar.formula.analysis.ddnnife.cli.CoreCommand" />
+		<extension id="de.featjar.formula.analysis.ddnnife.cli.SolutionCountCommand" />
+		<extension id="de.featjar.formula.analysis.ddnnife.cli.SolutionsCommand" />
+	</point>
+</extensions>

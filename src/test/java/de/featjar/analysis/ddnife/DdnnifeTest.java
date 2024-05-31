@@ -36,8 +36,8 @@ import de.featjar.formula.structure.formula.connective.BiImplies;
 import de.featjar.formula.structure.formula.connective.Implies;
 import de.featjar.formula.structure.formula.connective.Or;
 import de.featjar.formula.structure.formula.predicate.Literal;
-import de.featjar.formula.transformer.ComputeCNFFormula;
-import de.featjar.formula.transformer.ComputeNNFFormula;
+import de.featjar.formula.transform.ComputeCNFFormula;
+import de.featjar.formula.transform.ComputeNNFFormula;
 import java.math.BigInteger;
 import org.junit.jupiter.api.Test;
 

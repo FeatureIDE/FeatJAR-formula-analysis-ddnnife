@@ -44,6 +44,6 @@ public class ComputeSolutionCountDdnnife extends DdnnifeAnalysis<BigInteger> {
 
     @Override
     public Result<BigInteger> compute(List<Object> dependencyList, Progress progress) {
-        return initializeSolver(dependencyList).countSolutions();
+        return setup(dependencyList).countSolutions();
     }
 }

@@ -44,6 +44,6 @@ public class ComputeSolutionDdnnife extends DdnnifeAnalysis<BooleanSolution> {
 
     @Override
     public Result<BooleanSolution> compute(List<Object> dependencyList, Progress progress) {
-        return initializeSolver(dependencyList).getSolution();
+        return setup(dependencyList).getSolution();
     }
 }

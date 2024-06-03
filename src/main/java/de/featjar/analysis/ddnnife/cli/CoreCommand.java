@@ -34,8 +34,8 @@ public class CoreCommand extends ADdnnifeAnalysisCommand<BooleanAssignment, Bool
     }
 
     @Override
-    public IComputation<BooleanAssignment> newAnalysis(ComputeDdnnifeWrapper formula) {
-        return formula.map(ComputeCoreDeadDdnnife::new);
+    public IComputation<BooleanAssignment> newAnalysis(ComputeDdnnifeWrapper ddnnife) {
+        return ddnnife.map(ComputeCoreDeadDdnnife::new);
     }
 
     @Override

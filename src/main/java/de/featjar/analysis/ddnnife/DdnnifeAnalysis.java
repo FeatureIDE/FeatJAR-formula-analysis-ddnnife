@@ -52,13 +52,12 @@ public abstract class DdnnifeAnalysis<T> extends AComputation<T> {
         super(other);
     }
 
-    public DdnnifeWrapper initializeSolver(List<Object> dependencyList) {
-        DdnnifeWrapper solver = DDNNIFE_WRAPPER.get(dependencyList);
+    public DdnnifeWrapper setup(List<Object> dependencyList) {
+        DdnnifeWrapper ddnnife = DDNNIFE_WRAPPER.get(dependencyList);
         ABooleanAssignment assumedAssignment = ASSUMED_ASSIGNMENT.get(dependencyList);
-        Duration timeout = SAT_TIMEOUT.get(dependencyList);
         FeatJAR.log().debug("assuming %s", assumedAssignment);
-        solver.setAssumptions(assumedAssignment);
-        solver.setTimeout(timeout);
-        return solver;
+        ddnnife.setAssumptions(assumedAssignment);
+        ddnnife.setTimeout(SAT_TIMEOUT.get(dependencyList));
+        return ddnnife;
     }
 }

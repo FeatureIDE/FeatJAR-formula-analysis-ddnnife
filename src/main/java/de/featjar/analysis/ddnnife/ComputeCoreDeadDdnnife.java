@@ -44,6 +44,6 @@ public class ComputeCoreDeadDdnnife extends DdnnifeAnalysis<BooleanAssignment> {
 
     @Override
     public Result<BooleanAssignment> compute(List<Object> dependencyList, Progress progress) {
-        return initializeSolver(dependencyList).core();
+        return setup(dependencyList).core();
     }
 }

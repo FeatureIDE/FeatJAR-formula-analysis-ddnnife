@@ -156,10 +156,7 @@ public class DdnnifeWrapper implements ISolver, AutoCloseable {
     public Result<BooleanSolution> getSolution() {
         StringBuilder sb = new StringBuilder("enum l 1");
         writeAssumptions(sb);
-        return compute(sb.toString())
-                .map(s -> new BooleanSolution(Arrays.stream(s.split("\\w+"))
-                        .mapToInt(Integer::parseInt)
-                        .toArray()));
+        return compute(sb.toString()).map(this::formatLiterals).map(s -> s.toSolution());
     }
 
     public Result<BigInteger> countSolutions() {
@@ -171,10 +168,14 @@ public class DdnnifeWrapper implements ISolver, AutoCloseable {
     public Result<BooleanAssignment> core() {
         StringBuilder sb = new StringBuilder("core");
         writeAssumptions(sb);
-        return compute(sb.toString())
-                .map(s -> new BooleanAssignment(Arrays.stream(s.split("\\w+"))
-                        .mapToInt(Integer::parseInt)
-                        .toArray()));
+        return compute(sb.toString()).map(this::formatLiterals);
+    }
+
+    private BooleanAssignment formatLiterals(String s) {
+        return new BooleanAssignment(Arrays.stream(s.split("\\s+"))
+                .filter(s2 -> !s2.isBlank())
+                .mapToInt(Integer::parseInt)
+                .toArray());
     }
 
     private void writeAssumptions(StringBuilder sb) {

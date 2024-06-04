@@ -20,16 +20,16 @@
  */
 package de.featjar.analysis.ddnnife.solver;
 
+import de.featjar.analysis.ISolver;
 import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Result;
 import de.featjar.base.io.IO;
 import de.featjar.bin.ddnnife.D4Binary;
 import de.featjar.bin.ddnnife.DdnnifeBinary;
-import de.featjar.formula.analysis.ISolver;
-import de.featjar.formula.analysis.bool.ABooleanAssignment;
-import de.featjar.formula.analysis.bool.BooleanAssignment;
-import de.featjar.formula.analysis.bool.BooleanAssignmentGroups;
-import de.featjar.formula.analysis.bool.BooleanSolution;
+import de.featjar.formula.assignment.ABooleanAssignment;
+import de.featjar.formula.assignment.BooleanAssignment;
+import de.featjar.formula.assignment.BooleanAssignmentGroups;
+import de.featjar.formula.assignment.BooleanSolution;
 import de.featjar.formula.io.dimacs.BooleanAssignmentGroupsDimacsFormat;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

@@ -23,7 +23,7 @@ package de.featjar.analysis.ddnnife.cli;
 import de.featjar.analysis.ddnnife.ComputeCoreDeadDdnnife;
 import de.featjar.analysis.ddnnife.ComputeDdnnifeWrapper;
 import de.featjar.base.computation.IComputation;
-import de.featjar.formula.analysis.bool.BooleanAssignment;
+import de.featjar.formula.assignment.BooleanAssignment;
 import java.util.Optional;
 
 public class CoreCommand extends ADdnnifeAnalysisCommand<BooleanAssignment, BooleanAssignment> {

@@ -24,7 +24,7 @@ import de.featjar.analysis.ddnnife.solver.DdnnifeWrapper;
 import de.featjar.base.computation.IComputation;
 import de.featjar.base.computation.Progress;
 import de.featjar.base.data.Result;
-import de.featjar.formula.analysis.bool.BooleanAssignment;
+import de.featjar.formula.assignment.BooleanAssignment;
 import java.util.List;
 
 /**

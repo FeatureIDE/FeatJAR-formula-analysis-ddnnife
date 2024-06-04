@@ -27,7 +27,7 @@ import de.featjar.base.computation.Dependency;
 import de.featjar.base.computation.IComputation;
 import de.featjar.base.computation.Progress;
 import de.featjar.base.data.Result;
-import de.featjar.formula.analysis.bool.BooleanAssignmentGroups;
+import de.featjar.formula.assignment.BooleanAssignmentGroups;
 import java.util.List;
 
 /**

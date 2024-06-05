@@ -18,7 +18,7 @@
  *
  * See <https://github.com/FeatJAR/formula-analysis-ddnnife> for further information.
  */
-package de.featjar.analysis.ddnnife;
+package de.featjar.analysis.ddnnife.computation;
 
 import de.featjar.analysis.ddnnife.solver.DdnnifeWrapper;
 import de.featjar.base.FeatJAR;

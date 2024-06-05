@@ -24,8 +24,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import de.featjar.Common;
-import de.featjar.analysis.ddnnife.ComputeDdnnifeWrapper;
-import de.featjar.analysis.ddnnife.ComputeSolutionCountDdnnife;
+import de.featjar.analysis.ddnnife.computation.ComputeDdnnifeWrapper;
+import de.featjar.analysis.ddnnife.computation.ComputeSolutionCountDdnnife;
 import de.featjar.base.computation.Computations;
 import de.featjar.base.data.Result;
 import de.featjar.formula.assignment.ComputeBooleanRepresentation;

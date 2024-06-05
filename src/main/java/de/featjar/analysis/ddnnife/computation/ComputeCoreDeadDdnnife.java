@@ -18,7 +18,7 @@
  *
  * See <https://github.com/FeatJAR/formula-analysis-ddnnife> for further information.
  */
-package de.featjar.analysis.ddnnife;
+package de.featjar.analysis.ddnnife.computation;
 
 import de.featjar.analysis.ddnnife.solver.DdnnifeWrapper;
 import de.featjar.base.computation.IComputation;
@@ -32,7 +32,7 @@ import java.util.List;
  *
  * @author Sebastian Krieter
  */
-public class ComputeCoreDeadDdnnife extends DdnnifeAnalysis<BooleanAssignment> {
+public class ComputeCoreDeadDdnnife extends ADdnnifeAnalysis<BooleanAssignment> {
 
     public ComputeCoreDeadDdnnife(IComputation<DdnnifeWrapper> ddnnifeWrapper) {
         super(ddnnifeWrapper);

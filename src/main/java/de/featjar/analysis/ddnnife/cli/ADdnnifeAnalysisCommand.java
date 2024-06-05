@@ -21,7 +21,7 @@
 package de.featjar.analysis.ddnnife.cli;
 
 import de.featjar.analysis.AAnalysisCommand;
-import de.featjar.analysis.ddnnife.ComputeDdnnifeWrapper;
+import de.featjar.analysis.ddnnife.computation.ComputeDdnnifeWrapper;
 import de.featjar.base.cli.ICommand;
 import de.featjar.base.cli.Option;
 import de.featjar.base.computation.Computations;

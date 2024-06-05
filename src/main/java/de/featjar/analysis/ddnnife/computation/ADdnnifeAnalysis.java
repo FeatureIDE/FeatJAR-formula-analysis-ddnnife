@@ -18,7 +18,7 @@
  *
  * See <https://github.com/FeatJAR/formula-analysis-ddnnife> for further information.
  */
-package de.featjar.analysis.ddnnife;
+package de.featjar.analysis.ddnnife.computation;
 
 import de.featjar.analysis.ddnnife.solver.DdnnifeWrapper;
 import de.featjar.base.FeatJAR;
@@ -38,17 +38,17 @@ import java.util.List;
  *
  * @author Sebastian Krieter
  */
-public abstract class DdnnifeAnalysis<T> extends AComputation<T> {
+public abstract class ADdnnifeAnalysis<T> extends AComputation<T> {
     public static final Dependency<DdnnifeWrapper> DDNNIFE_WRAPPER = Dependency.newDependency(DdnnifeWrapper.class);
     public static final Dependency<ABooleanAssignment> ASSUMED_ASSIGNMENT =
             Dependency.newDependency(ABooleanAssignment.class);
     public static final Dependency<Duration> SAT_TIMEOUT = Dependency.newDependency(Duration.class);
 
-    public DdnnifeAnalysis(IComputation<DdnnifeWrapper> ddnnifeWrapper, Object... computations) {
+    public ADdnnifeAnalysis(IComputation<DdnnifeWrapper> ddnnifeWrapper, Object... computations) {
         super(ddnnifeWrapper, Computations.of(new BooleanAssignment()), Computations.of(Duration.ZERO), computations);
     }
 
-    protected DdnnifeAnalysis(DdnnifeAnalysis<T> other) {
+    protected ADdnnifeAnalysis(ADdnnifeAnalysis<T> other) {
         super(other);
     }
 

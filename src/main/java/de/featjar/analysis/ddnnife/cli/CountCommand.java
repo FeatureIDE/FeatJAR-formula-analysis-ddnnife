@@ -20,8 +20,8 @@
  */
 package de.featjar.analysis.ddnnife.cli;
 
-import de.featjar.analysis.ddnnife.ComputeDdnnifeWrapper;
-import de.featjar.analysis.ddnnife.ComputeSolutionCountDdnnife;
+import de.featjar.analysis.ddnnife.computation.ComputeDdnnifeWrapper;
+import de.featjar.analysis.ddnnife.computation.ComputeSolutionCountDdnnife;
 import de.featjar.base.computation.IComputation;
 import de.featjar.formula.assignment.BooleanAssignment;
 import java.math.BigInteger;

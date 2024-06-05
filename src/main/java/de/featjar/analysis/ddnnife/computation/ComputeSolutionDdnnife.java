@@ -18,13 +18,13 @@
  *
  * See <https://github.com/FeatJAR/formula-analysis-ddnnife> for further information.
  */
-package de.featjar.analysis.ddnnife;
+package de.featjar.analysis.ddnnife.computation;
 
 import de.featjar.analysis.ddnnife.solver.DdnnifeWrapper;
 import de.featjar.base.computation.IComputation;
 import de.featjar.base.computation.Progress;
 import de.featjar.base.data.Result;
-import java.math.BigInteger;
+import de.featjar.formula.assignment.BooleanSolution;
 import java.util.List;
 
 /**
@@ -32,18 +32,18 @@ import java.util.List;
  *
  * @author Sebastian Krieter
  */
-public class ComputeSolutionCountDdnnife extends DdnnifeAnalysis<BigInteger> {
+public class ComputeSolutionDdnnife extends ADdnnifeAnalysis<BooleanSolution> {
 
-    public ComputeSolutionCountDdnnife(IComputation<DdnnifeWrapper> ddnnifeWrapper) {
+    public ComputeSolutionDdnnife(IComputation<DdnnifeWrapper> ddnnifeWrapper) {
         super(ddnnifeWrapper);
     }
 
-    protected ComputeSolutionCountDdnnife(ComputeSolutionCountDdnnife other) {
+    protected ComputeSolutionDdnnife(ComputeSolutionDdnnife other) {
         super(other);
     }
 
     @Override
-    public Result<BigInteger> compute(List<Object> dependencyList, Progress progress) {
-        return setup(dependencyList).countSolutions();
+    public Result<BooleanSolution> compute(List<Object> dependencyList, Progress progress) {
+        return setup(dependencyList).getSolution();
     }
 }

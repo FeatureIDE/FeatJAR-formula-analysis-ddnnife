@@ -35,13 +35,13 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.Closeable;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -53,11 +53,13 @@ public class DdnnifeWrapper implements ISolver, AutoCloseable {
     private Process process;
 
     private BufferedReader prcIn;
+    private BufferedReader prcErr;
     private BufferedWriter prcOut;
 
     private Path ddnifeFile;
 
     private ABooleanAssignment assumptions;
+    private int features;
 
     public DdnnifeWrapper(BooleanAssignmentGroups formula) throws Exception {
         int features = formula.getVariableMap().getVariableCount();
@@ -68,13 +70,16 @@ public class DdnnifeWrapper implements ISolver, AutoCloseable {
             computeDdnnf(formula);
 
             process = startProcess(ddnifeFile, features);
-            prcIn = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            prcOut = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
 
+            prcErr = process.errorReader();
+            prcIn = process.inputReader();
+            prcOut = process.outputWriter();
+
+            if (prcErr.ready()) {
+                throw new RuntimeException(prcErr.lines().collect(Collectors.joining("\n")));
+            }
             if (prcIn.ready()) {
-                RuntimeException e = new RuntimeException(prcIn.lines().collect(Collectors.joining("\n")));
-                close();
-                throw e;
+                throw new RuntimeException(prcIn.lines().collect(Collectors.joining("\n")));
             }
         } catch (Exception e) {
             close();
@@ -103,20 +108,19 @@ public class DdnnifeWrapper implements ISolver, AutoCloseable {
     }
 
     private Process startProcess(Path ddnifeFile, int features) {
+        if (features < 0) {
+            throw new IllegalArgumentException(String.format("Invalid number of features %d", features));
+        }
+        this.features = features;
         try {
-            if (features > -1) {
-                DdnnifeBinary extension = FeatJAR.extension(DdnnifeBinary.class);
-                return new ProcessBuilder(
-                                extension.getExecutablePath().toString(),
-                                ddnifeFile.toString(),
-                                "-o",
-                                Integer.toString(features),
-                                "--stream")
-                        .start();
-            } else {
-                return new ProcessBuilder(new DdnnifeBinary().getExecutableName(), ddnifeFile.toString(), "--stream")
-                        .start();
-            }
+            DdnnifeBinary extension = FeatJAR.extension(DdnnifeBinary.class);
+            return new ProcessBuilder(
+                            extension.getExecutablePath().toString(),
+                            "-t",
+                            Integer.toString(features),
+                            ddnifeFile.toString(),
+                            "stream")
+                    .start();
         } catch (IOException e) {
             FeatJAR.log().error(e);
             return null;
@@ -156,7 +160,7 @@ public class DdnnifeWrapper implements ISolver, AutoCloseable {
     public Result<BooleanSolution> getSolution() {
         StringBuilder sb = new StringBuilder("enum l 1");
         writeAssumptions(sb);
-        return compute(sb.toString()).map(this::formatLiterals).map(s -> s.toSolution());
+        return compute(sb.toString()).map(this::formatLiterals).map(BooleanSolution::new);
     }
 
     public Result<BigInteger> countSolutions() {
@@ -168,14 +172,58 @@ public class DdnnifeWrapper implements ISolver, AutoCloseable {
     public Result<BooleanAssignment> core() {
         StringBuilder sb = new StringBuilder("core");
         writeAssumptions(sb);
-        return compute(sb.toString()).map(this::formatLiterals);
+        return compute(sb.toString()).map(this::formatLiterals).map(BooleanAssignment::new);
     }
 
-    private BooleanAssignment formatLiterals(String s) {
-        return new BooleanAssignment(Arrays.stream(s.split("\\s+"))
+    public Result<List<BooleanSolution>> getSolutions(int count) {
+        StringBuilder sb = new StringBuilder("enum l ");
+        sb.append(count);
+        writeAssumptions(sb);
+        return compute(sb.toString())
+                .map(this::formatLiterals)
+                .map(this::splitLiterals)
+                .map(l -> l.stream().map(BooleanSolution::new).collect(Collectors.toList()));
+    }
+
+    public Result<List<BooleanSolution>> getRandomSolutions(int count, long seed) {
+        StringBuilder sb = new StringBuilder("random l ");
+        sb.append(count);
+        sb.append(" s ");
+        sb.append(seed);
+        writeAssumptions(sb);
+        return compute(sb.toString())
+                .map(this::formatLiterals)
+                .map(this::splitLiterals)
+                .map(l -> l.stream().map(BooleanSolution::new).collect(Collectors.toList()));
+    }
+
+    public Result<List<BooleanSolution>> getTWise(int t, long seed) {
+        StringBuilder sb = new StringBuilder("t-wise l ");
+        sb.append(t);
+        sb.append(" s ");
+        sb.append(seed);
+        writeAssumptions(sb);
+        return compute(sb.toString())
+                .map(this::formatLiterals)
+                .map(this::splitLiterals)
+                .map(l -> l.stream().map(BooleanSolution::new).collect(Collectors.toList()));
+    }
+
+    private int[] formatLiterals(String s) {
+        return Arrays.stream(s.split("(\\s+|;)"))
                 .filter(s2 -> !s2.isBlank())
                 .mapToInt(Integer::parseInt)
-                .toArray());
+                .toArray();
+    }
+
+    private List<int[]> splitLiterals(int[] literals) {
+        ArrayList<int[]> list = new ArrayList<>();
+        for (int i = 0; i < literals.length; i += features) {
+            int[] literalsPart = new int[features];
+            System.arraycopy(literals, i, literalsPart, 0, features);
+            list.add(literalsPart);
+        }
+        return list;
     }
 
     private void writeAssumptions(StringBuilder sb) {
@@ -207,7 +255,6 @@ public class DdnnifeWrapper implements ISolver, AutoCloseable {
 
     @Override
     public boolean isTimeoutOccurred() {
-        // TODO Auto-generated method stub
         return false;
     }
 
@@ -222,6 +269,7 @@ public class DdnnifeWrapper implements ISolver, AutoCloseable {
         } catch (IOException | InterruptedException e) {
             FeatJAR.log().error(e);
         } finally {
+            closeStream(prcErr);
             closeStream(prcIn);
             closeStream(prcOut);
             try {

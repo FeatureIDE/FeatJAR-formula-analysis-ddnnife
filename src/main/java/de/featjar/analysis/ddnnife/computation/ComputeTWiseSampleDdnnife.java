@@ -26,7 +26,7 @@ import de.featjar.base.computation.Dependency;
 import de.featjar.base.computation.IComputation;
 import de.featjar.base.computation.Progress;
 import de.featjar.base.data.Result;
-import de.featjar.formula.assignment.BooleanSolution;
+import de.featjar.formula.assignment.BooleanSolutionList;
 import java.util.List;
 
 /**
@@ -34,7 +34,7 @@ import java.util.List;
  *
  * @author Sebastian Krieter
  */
-public class ComputeTWiseSampleDdnnife extends ADdnnifeAnalysis<List<BooleanSolution>> {
+public class ComputeTWiseSampleDdnnife extends ADdnnifeAnalysis<BooleanSolutionList> {
 
     public static final Dependency<Integer> T = Dependency.newDependency(Integer.class);
     public static final Dependency<Long> RANDOM_SEED = Dependency.newDependency(Long.class);
@@ -48,7 +48,7 @@ public class ComputeTWiseSampleDdnnife extends ADdnnifeAnalysis<List<BooleanSolu
     }
 
     @Override
-    public Result<List<BooleanSolution>> compute(List<Object> dependencyList, Progress progress) {
+    public Result<BooleanSolutionList> compute(List<Object> dependencyList, Progress progress) {
         return setup(dependencyList).getTWise(T.get(dependencyList), RANDOM_SEED.get(dependencyList));
     }
 }

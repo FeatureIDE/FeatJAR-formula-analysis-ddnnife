@@ -30,6 +30,7 @@ import de.featjar.formula.assignment.ABooleanAssignment;
 import de.featjar.formula.assignment.BooleanAssignment;
 import de.featjar.formula.assignment.BooleanAssignmentGroups;
 import de.featjar.formula.assignment.BooleanSolution;
+import de.featjar.formula.assignment.BooleanSolutionList;
 import de.featjar.formula.io.dimacs.BooleanAssignmentGroupsDimacsFormat;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -175,17 +176,18 @@ public class DdnnifeWrapper implements ISolver, AutoCloseable {
         return compute(sb.toString()).map(this::formatLiterals).map(BooleanAssignment::new);
     }
 
-    public Result<List<BooleanSolution>> getSolutions(int count) {
+    public Result<BooleanSolutionList> getSolutions(int count) {
         StringBuilder sb = new StringBuilder("enum l ");
         sb.append(count);
         writeAssumptions(sb);
         return compute(sb.toString())
                 .map(this::formatLiterals)
                 .map(this::splitLiterals)
-                .map(l -> l.stream().map(BooleanSolution::new).collect(Collectors.toList()));
+                .map(l -> new BooleanSolutionList(
+                        l.stream().map(BooleanSolution::new).collect(Collectors.toList())));
     }
 
-    public Result<List<BooleanSolution>> getRandomSolutions(int count, long seed) {
+    public Result<BooleanSolutionList> getRandomSolutions(int count, long seed) {
         StringBuilder sb = new StringBuilder("random l ");
         sb.append(count);
         sb.append(" s ");
@@ -194,10 +196,11 @@ public class DdnnifeWrapper implements ISolver, AutoCloseable {
         return compute(sb.toString())
                 .map(this::formatLiterals)
                 .map(this::splitLiterals)
-                .map(l -> l.stream().map(BooleanSolution::new).collect(Collectors.toList()));
+                .map(l -> new BooleanSolutionList(
+                        l.stream().map(BooleanSolution::new).collect(Collectors.toList())));
     }
 
-    public Result<List<BooleanSolution>> getTWise(int t, long seed) {
+    public Result<BooleanSolutionList> getTWise(int t, long seed) {
         StringBuilder sb = new StringBuilder("t-wise l ");
         sb.append(t);
         sb.append(" s ");
@@ -206,7 +209,8 @@ public class DdnnifeWrapper implements ISolver, AutoCloseable {
         return compute(sb.toString())
                 .map(this::formatLiterals)
                 .map(this::splitLiterals)
-                .map(l -> l.stream().map(BooleanSolution::new).collect(Collectors.toList()));
+                .map(l -> new BooleanSolutionList(
+                        l.stream().map(BooleanSolution::new).collect(Collectors.toList())));
     }
 
     private int[] formatLiterals(String s) {

@@ -26,7 +26,7 @@ import de.featjar.base.computation.Dependency;
 import de.featjar.base.computation.IComputation;
 import de.featjar.base.computation.Progress;
 import de.featjar.base.data.Result;
-import de.featjar.formula.assignment.BooleanSolution;
+import de.featjar.formula.assignment.BooleanSolutionList;
 import java.util.List;
 
 /**
@@ -34,7 +34,7 @@ import java.util.List;
  *
  * @author Sebastian Krieter
  */
-public class ComputeSolutionsDdnnife extends ADdnnifeAnalysis<List<BooleanSolution>> {
+public class ComputeSolutionsDdnnife extends ADdnnifeAnalysis<BooleanSolutionList> {
 
     public static final Dependency<Integer> SOLUTION_COUNT = Dependency.newDependency(Integer.class);
 
@@ -47,7 +47,7 @@ public class ComputeSolutionsDdnnife extends ADdnnifeAnalysis<List<BooleanSoluti
     }
 
     @Override
-    public Result<List<BooleanSolution>> compute(List<Object> dependencyList, Progress progress) {
+    public Result<BooleanSolutionList> compute(List<Object> dependencyList, Progress progress) {
         return setup(dependencyList).getSolutions(SOLUTION_COUNT.get(dependencyList));
     }
 }

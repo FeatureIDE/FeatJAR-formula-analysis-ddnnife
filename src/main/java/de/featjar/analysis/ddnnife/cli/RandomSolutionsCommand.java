@@ -24,12 +24,16 @@ import de.featjar.analysis.ddnnife.computation.ComputeDdnnifeWrapper;
 import de.featjar.analysis.ddnnife.computation.ComputeRandomSolutionsDdnnife;
 import de.featjar.base.cli.Option;
 import de.featjar.base.computation.IComputation;
+import de.featjar.base.io.format.IFormat;
+import de.featjar.formula.VariableMap;
 import de.featjar.formula.assignment.BooleanAssignment;
-import de.featjar.formula.assignment.BooleanSolution;
+import de.featjar.formula.assignment.BooleanAssignmentGroups;
+import de.featjar.formula.assignment.BooleanSolutionList;
+import de.featjar.formula.io.csv.BooleanSolutionListCSVFormat;
 import java.util.List;
 import java.util.Optional;
 
-public class RandomSolutionsCommand extends ADdnnifeAnalysisCommand<List<BooleanSolution>, BooleanAssignment> {
+public class RandomSolutionsCommand extends ADdnnifeAnalysisCommand<BooleanSolutionList, BooleanAssignment> {
 
     public static final Option<Integer> SOLUTION_COUNT_OPTION = new Option<>("limit", Option.IntegerParser) //
             .setDescription("Number of solutions to compute") //
@@ -41,23 +45,25 @@ public class RandomSolutionsCommand extends ADdnnifeAnalysisCommand<List<Boolean
     }
 
     @Override
-    public IComputation<List<BooleanSolution>> newAnalysis(ComputeDdnnifeWrapper formula) {
+    public IComputation<BooleanSolutionList> newAnalysis(ComputeDdnnifeWrapper formula) {
         return formula.map(ComputeRandomSolutionsDdnnife::new)
                 .set(ComputeRandomSolutionsDdnnife.SOLUTION_COUNT, optionParser.get(SOLUTION_COUNT_OPTION))
                 .set(ComputeRandomSolutionsDdnnife.RANDOM_SEED, optionParser.get(RANDOM_SEED_OPTION));
     }
 
     @Override
-    public String serializeResult(List<BooleanSolution> assignments) {
-        StringBuilder sb = new StringBuilder();
-        for (BooleanSolution assignment : assignments) {
-            sb.append(assignment.print());
-            sb.append('\n');
-        }
-        if (!sb.isEmpty()) {
-            sb.setLength(sb.length() - 1);
-        }
-        return sb.toString();
+    protected Object getOuputObject(BooleanSolutionList list) {
+        return new BooleanAssignmentGroups(VariableMap.of(inputFormula), List.of(list.getAll()));
+    }
+
+    @Override
+    protected IFormat<?> getOuputFormat() {
+        return new BooleanSolutionListCSVFormat();
+    }
+
+    @Override
+    public String serializeResult(BooleanSolutionList assignments) {
+        return assignments.serialize();
     }
 
     @Override

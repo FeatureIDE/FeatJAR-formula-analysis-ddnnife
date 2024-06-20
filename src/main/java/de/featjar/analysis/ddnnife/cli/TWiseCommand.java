@@ -22,18 +22,28 @@ package de.featjar.analysis.ddnnife.cli;
 
 import de.featjar.analysis.ddnnife.computation.ComputeDdnnifeWrapper;
 import de.featjar.analysis.ddnnife.computation.ComputeTWiseSampleDdnnife;
+import de.featjar.base.cli.ICommand;
 import de.featjar.base.cli.Option;
 import de.featjar.base.computation.IComputation;
+import de.featjar.base.io.format.IFormat;
+import de.featjar.formula.VariableMap;
 import de.featjar.formula.assignment.BooleanAssignment;
-import de.featjar.formula.assignment.BooleanSolution;
+import de.featjar.formula.assignment.BooleanAssignmentGroups;
+import de.featjar.formula.assignment.BooleanSolutionList;
+import de.featjar.formula.io.csv.BooleanSolutionListCSVFormat;
 import java.util.List;
 import java.util.Optional;
 
-public class TWiseCommand extends ADdnnifeAnalysisCommand<List<BooleanSolution>, BooleanAssignment> {
+public class TWiseCommand extends ADdnnifeAnalysisCommand<BooleanSolutionList, BooleanAssignment> {
 
     public static final Option<Integer> T_OPTION = new Option<>("t", Option.IntegerParser) //
-            .setDescription("Value for parameter t") //
+            .setDescription("Value of parameter t.") //
             .setDefaultValue(2);
+
+    @Override
+    public List<Option<?>> getOptions() {
+        return ICommand.addOptions(super.getOptions(), T_OPTION);
+    }
 
     @Override
     public Optional<String> getDescription() {
@@ -41,23 +51,25 @@ public class TWiseCommand extends ADdnnifeAnalysisCommand<List<BooleanSolution>,
     }
 
     @Override
-    public IComputation<List<BooleanSolution>> newAnalysis(ComputeDdnnifeWrapper formula) {
+    public IComputation<BooleanSolutionList> newAnalysis(ComputeDdnnifeWrapper formula) {
         return formula.map(ComputeTWiseSampleDdnnife::new)
                 .set(ComputeTWiseSampleDdnnife.T, optionParser.get(T_OPTION))
                 .set(ComputeTWiseSampleDdnnife.RANDOM_SEED, optionParser.get(RANDOM_SEED_OPTION));
     }
 
     @Override
-    public String serializeResult(List<BooleanSolution> assignments) {
-        StringBuilder sb = new StringBuilder();
-        for (BooleanSolution assignment : assignments) {
-            sb.append(assignment.print());
-            sb.append('\n');
-        }
-        if (!sb.isEmpty()) {
-            sb.setLength(sb.length() - 1);
-        }
-        return sb.toString();
+    protected Object getOuputObject(BooleanSolutionList list) {
+        return new BooleanAssignmentGroups(VariableMap.of(inputFormula), List.of(list.getAll()));
+    }
+
+    @Override
+    protected IFormat<?> getOuputFormat() {
+        return new BooleanSolutionListCSVFormat();
+    }
+
+    @Override
+    public String serializeResult(BooleanSolutionList assignments) {
+        return assignments.serialize();
     }
 
     @Override

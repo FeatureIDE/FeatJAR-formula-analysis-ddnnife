@@ -23,7 +23,12 @@ package de.featjar.analysis.ddnnife.cli;
 import de.featjar.analysis.ddnnife.computation.ComputeCoreDeadDdnnife;
 import de.featjar.analysis.ddnnife.computation.ComputeDdnnifeWrapper;
 import de.featjar.base.computation.IComputation;
+import de.featjar.base.io.format.IFormat;
+import de.featjar.formula.VariableMap;
 import de.featjar.formula.assignment.BooleanAssignment;
+import de.featjar.formula.assignment.BooleanAssignmentGroups;
+import de.featjar.formula.io.csv.BooleanSolutionListCSVFormat;
+import java.util.List;
 import java.util.Optional;
 
 public class CoreCommand extends ADdnnifeAnalysisCommand<BooleanAssignment, BooleanAssignment> {
@@ -36,6 +41,16 @@ public class CoreCommand extends ADdnnifeAnalysisCommand<BooleanAssignment, Bool
     @Override
     public IComputation<BooleanAssignment> newAnalysis(ComputeDdnnifeWrapper ddnnife) {
         return ddnnife.map(ComputeCoreDeadDdnnife::new);
+    }
+
+    @Override
+    protected Object getOuputObject(BooleanAssignment assignment) {
+        return new BooleanAssignmentGroups(VariableMap.of(inputFormula), List.of(List.of(assignment)));
+    }
+
+    @Override
+    protected IFormat<?> getOuputFormat() {
+        return new BooleanSolutionListCSVFormat();
     }
 
     @Override

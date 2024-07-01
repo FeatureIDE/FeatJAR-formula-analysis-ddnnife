@@ -35,7 +35,7 @@ import java.util.Optional;
 
 public class RandomSolutionsCommand extends ADdnnifeAnalysisCommand<BooleanSolutionList, BooleanAssignment> {
 
-    public static final Option<Integer> SOLUTION_COUNT_OPTION = new Option<>("limit", Option.IntegerParser) //
+    public static final Option<Integer> SOLUTION_COUNT_OPTION = Option.newOption("limit", Option.IntegerParser) //
             .setDescription("Number of solutions to compute") //
             .setDefaultValue(1);
 

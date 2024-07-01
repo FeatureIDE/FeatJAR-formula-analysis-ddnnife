@@ -22,7 +22,6 @@ package de.featjar.analysis.ddnnife.cli;
 
 import de.featjar.analysis.ddnnife.computation.ComputeDdnnifeWrapper;
 import de.featjar.analysis.ddnnife.computation.ComputeTWiseSampleDdnnife;
-import de.featjar.base.cli.ICommand;
 import de.featjar.base.cli.Option;
 import de.featjar.base.computation.IComputation;
 import de.featjar.base.io.format.IFormat;
@@ -36,14 +35,9 @@ import java.util.Optional;
 
 public class TWiseCommand extends ADdnnifeAnalysisCommand<BooleanSolutionList, BooleanAssignment> {
 
-    public static final Option<Integer> T_OPTION = new Option<>("t", Option.IntegerParser) //
+    public static final Option<Integer> T_OPTION = Option.newOption("t", Option.IntegerParser) //
             .setDescription("Value of parameter t.") //
             .setDefaultValue(2);
-
-    @Override
-    public List<Option<?>> getOptions() {
-        return ICommand.addOptions(super.getOptions(), T_OPTION);
-    }
 
     @Override
     public Optional<String> getDescription() {

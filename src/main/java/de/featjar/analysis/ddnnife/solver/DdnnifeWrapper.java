@@ -21,11 +21,11 @@
 package de.featjar.analysis.ddnnife.solver;
 
 import de.featjar.analysis.ISolver;
+import de.featjar.analysis.ddnnife.bin.D4Binary;
+import de.featjar.analysis.ddnnife.bin.DdnnifeBinary;
 import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Result;
 import de.featjar.base.io.IO;
-import de.featjar.bin.ddnnife.D4Binary;
-import de.featjar.bin.ddnnife.DdnnifeBinary;
 import de.featjar.formula.assignment.ABooleanAssignment;
 import de.featjar.formula.assignment.BooleanAssignment;
 import de.featjar.formula.assignment.BooleanAssignmentGroups;

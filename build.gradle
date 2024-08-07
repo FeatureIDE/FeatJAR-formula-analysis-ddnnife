@@ -5,7 +5,6 @@ plugins {
 
 dependencies {
     api 'de.featjar:formula'
-    api 'de.featjar:bin-ddnnife'
     implementation testFixtures('de.featjar:formula')
 }
 

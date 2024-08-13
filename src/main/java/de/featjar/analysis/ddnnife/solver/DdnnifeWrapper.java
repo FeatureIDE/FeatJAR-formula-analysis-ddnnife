@@ -115,6 +115,7 @@ public class DdnnifeWrapper implements ISolver, AutoCloseable {
         this.features = features;
         try {
             DdnnifeBinary extension = FeatJAR.extension(DdnnifeBinary.class);
+            var test = extension.getExecutablePath().toString();
             return new ProcessBuilder(
                             extension.getExecutablePath().toString(),
                             "-t",

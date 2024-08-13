@@ -62,6 +62,7 @@ public class DdnnifeTest extends Common {
                 .map(ComputeDdnnifeWrapper::new)
                 .map(ComputeSolutionCountDdnnife::new)
                 .computeResult();
+
         assertTrue(result.isPresent(), result::printProblems);
         assertEquals(BigInteger.valueOf(3), result.get());
     }

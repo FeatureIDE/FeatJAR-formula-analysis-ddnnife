@@ -21,11 +21,11 @@
 package de.featjar.analysis.ddnnife.solver;
 
 import de.featjar.analysis.ISolver;
+import de.featjar.analysis.ddnnife.bin.D4Binary;
+import de.featjar.analysis.ddnnife.bin.DdnnifeBinary;
 import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Result;
 import de.featjar.base.io.IO;
-import de.featjar.analysis.ddnnife.bin.D4Binary;
-import de.featjar.analysis.ddnnife.bin.DdnnifeBinary;
 import de.featjar.formula.assignment.ABooleanAssignment;
 import de.featjar.formula.assignment.BooleanAssignment;
 import de.featjar.formula.assignment.BooleanAssignmentGroups;
@@ -76,10 +76,10 @@ public class DdnnifeWrapper implements ISolver, AutoCloseable {
             prcIn = process.inputReader();
             prcOut = process.outputWriter();
 
-            if (prcErr.ready()) {
+            if (!prcErr.ready()) {
                 throw new RuntimeException(prcErr.lines().collect(Collectors.joining("\n")));
             }
-            if (prcIn.ready()) {
+            if (!prcIn.ready()) {
                 throw new RuntimeException(prcIn.lines().collect(Collectors.joining("\n")));
             }
         } catch (Exception e) {

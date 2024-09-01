@@ -22,6 +22,7 @@ package de.featjar.analysis.ddnnife.cli;
 
 import de.featjar.analysis.ddnnife.computation.ComputeDdnnifeWrapper;
 import de.featjar.analysis.ddnnife.computation.ComputeSolutionCountDdnnife;
+import de.featjar.base.cli.OptionList;
 import de.featjar.base.computation.IComputation;
 import de.featjar.formula.assignment.BooleanAssignment;
 import java.math.BigInteger;
@@ -35,7 +36,7 @@ public class CountCommand extends ADdnnifeAnalysisCommand<BigInteger, BooleanAss
     }
 
     @Override
-    public IComputation<BigInteger> newAnalysis(ComputeDdnnifeWrapper formula) {
+    public IComputation<BigInteger> newAnalysis(OptionList optionParser, ComputeDdnnifeWrapper formula) {
         return formula.map(ComputeSolutionCountDdnnife::new);
     }
 

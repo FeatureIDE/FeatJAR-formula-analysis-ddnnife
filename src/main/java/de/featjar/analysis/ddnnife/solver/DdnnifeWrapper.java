@@ -133,7 +133,7 @@ public class DdnnifeWrapper implements ISolver, AutoCloseable {
             try {
                 prcOut.write(query + "\n");
                 prcOut.flush();
-                return Result.of(prcIn.readLine());
+                return Result.ofNullable(prcIn.readLine());
             } catch (IOException e) {
                 return Result.empty(e);
             }
@@ -263,7 +263,7 @@ public class DdnnifeWrapper implements ISolver, AutoCloseable {
     }
 
     @Override
-    public void close() throws Exception {
+    public final void close() throws Exception {
         try {
             if (process != null && process.isAlive()) {
                 prcOut.write("exit\n");

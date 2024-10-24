@@ -36,7 +36,10 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -72,9 +75,9 @@ public class DdnnifeWrapper implements ISolver, AutoCloseable {
 
             process = startProcess(ddnifeFile, features);
 
-            prcErr = process.errorReader();
-            prcIn = process.inputReader();
-            prcOut = process.outputWriter();
+            prcErr = new BufferedReader(new InputStreamReader(process.getErrorStream(), StandardCharsets.UTF_8));
+            prcIn = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8));
+            prcOut = new BufferedWriter(new OutputStreamWriter(process.getOutputStream(), StandardCharsets.UTF_8));
 
             if (prcErr.ready()) {
                 throw new RuntimeException(prcErr.lines().collect(Collectors.joining("\n")));

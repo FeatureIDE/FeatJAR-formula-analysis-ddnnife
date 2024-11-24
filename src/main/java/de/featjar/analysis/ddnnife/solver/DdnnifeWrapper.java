@@ -26,7 +26,7 @@ import de.featjar.analysis.ddnnife.bin.DdnnifeBinary;
 import de.featjar.base.FeatJAR;
 import de.featjar.base.data.Result;
 import de.featjar.base.io.IO;
-import de.featjar.formula.assignment.ABooleanAssignment;
+import de.featjar.formula.VariableMap;
 import de.featjar.formula.assignment.BooleanAssignment;
 import de.featjar.formula.assignment.BooleanAssignmentGroups;
 import de.featjar.formula.assignment.BooleanSolution;
@@ -62,18 +62,18 @@ public class DdnnifeWrapper implements ISolver, AutoCloseable {
 
     private Path ddnifeFile;
 
-    private ABooleanAssignment assumptions;
-    private int features;
+    private BooleanAssignment assumptions;
+    private VariableMap variableMap;
 
     public DdnnifeWrapper(BooleanAssignmentGroups formula) throws Exception {
-        int features = formula.getVariableMap().getVariableCount();
+        variableMap = formula.getVariableMap();
         try {
             ddnifeFile = Files.createTempFile("ddnnifeInput", ".nnf");
             ddnifeFile.toFile().deleteOnExit();
 
             computeDdnnf(formula);
 
-            process = startProcess(ddnifeFile, features);
+            process = startProcess(ddnifeFile);
 
             prcErr = new BufferedReader(new InputStreamReader(process.getErrorStream(), StandardCharsets.UTF_8));
             prcIn = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8));
@@ -111,17 +111,13 @@ public class DdnnifeWrapper implements ISolver, AutoCloseable {
         Files.deleteIfExists(d4File);
     }
 
-    private Process startProcess(Path ddnifeFile, int features) {
-        if (features < 0) {
-            throw new IllegalArgumentException(String.format("Invalid number of features %d", features));
-        }
-        this.features = features;
+    private Process startProcess(Path ddnifeFile) {
         try {
             DdnnifeBinary extension = FeatJAR.extension(DdnnifeBinary.class);
             return new ProcessBuilder(
                             extension.getExecutablePath().toString(),
                             "-t",
-                            Integer.toString(features),
+                            Integer.toString(variableMap.getVariableCount()),
                             ddnifeFile.toString(),
                             "stream")
                     .start();
@@ -187,7 +183,7 @@ public class DdnnifeWrapper implements ISolver, AutoCloseable {
                 .map(this::formatLiterals)
                 .map(this::splitLiterals)
                 .map(l -> new BooleanSolutionList(
-                        l.stream().map(BooleanSolution::new).collect(Collectors.toList())));
+                        variableMap, l.stream().map(BooleanSolution::new).collect(Collectors.toList())));
     }
 
     public Result<BooleanSolutionList> getRandomSolutions(int count, long seed) {
@@ -200,7 +196,7 @@ public class DdnnifeWrapper implements ISolver, AutoCloseable {
                 .map(this::formatLiterals)
                 .map(this::splitLiterals)
                 .map(l -> new BooleanSolutionList(
-                        l.stream().map(BooleanSolution::new).collect(Collectors.toList())));
+                        variableMap, l.stream().map(BooleanSolution::new).collect(Collectors.toList())));
     }
 
     public Result<BooleanSolutionList> getTWise(int t, long seed) {
@@ -213,7 +209,7 @@ public class DdnnifeWrapper implements ISolver, AutoCloseable {
                 .map(this::formatLiterals)
                 .map(this::splitLiterals)
                 .map(l -> new BooleanSolutionList(
-                        l.stream().map(BooleanSolution::new).collect(Collectors.toList())));
+                        variableMap, l.stream().map(BooleanSolution::new).collect(Collectors.toList())));
     }
 
     private int[] formatLiterals(String s) {
@@ -225,9 +221,10 @@ public class DdnnifeWrapper implements ISolver, AutoCloseable {
 
     private List<int[]> splitLiterals(int[] literals) {
         ArrayList<int[]> list = new ArrayList<>();
-        for (int i = 0; i < literals.length; i += features) {
-            int[] literalsPart = new int[features];
-            System.arraycopy(literals, i, literalsPart, 0, features);
+        int variableCount = variableMap.getVariableCount();
+        for (int i = 0; i < literals.length; i += variableCount) {
+            int[] literalsPart = new int[variableCount];
+            System.arraycopy(literals, i, literalsPart, 0, variableCount);
             list.add(literalsPart);
         }
         return list;
@@ -242,11 +239,11 @@ public class DdnnifeWrapper implements ISolver, AutoCloseable {
         }
     }
 
-    public ABooleanAssignment getAssumptions() {
+    public BooleanAssignment getAssumptions() {
         return assumptions;
     }
 
-    public void setAssumptions(ABooleanAssignment assumptions) {
+    public void setAssumptions(BooleanAssignment assumptions) {
         this.assumptions = assumptions;
     }
 

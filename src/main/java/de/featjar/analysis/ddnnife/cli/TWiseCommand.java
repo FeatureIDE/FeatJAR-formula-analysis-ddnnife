@@ -26,12 +26,10 @@ import de.featjar.base.cli.Option;
 import de.featjar.base.cli.OptionList;
 import de.featjar.base.computation.IComputation;
 import de.featjar.base.io.format.IFormat;
-import de.featjar.formula.VariableMap;
 import de.featjar.formula.assignment.BooleanAssignment;
 import de.featjar.formula.assignment.BooleanAssignmentGroups;
 import de.featjar.formula.assignment.BooleanSolutionList;
 import de.featjar.formula.io.csv.BooleanSolutionListCSVFormat;
-import java.util.List;
 import java.util.Optional;
 
 public class TWiseCommand extends ADdnnifeAnalysisCommand<BooleanSolutionList, BooleanAssignment> {
@@ -54,7 +52,7 @@ public class TWiseCommand extends ADdnnifeAnalysisCommand<BooleanSolutionList, B
 
     @Override
     protected Object getOuputObject(BooleanSolutionList list) {
-        return new BooleanAssignmentGroups(VariableMap.of(inputFormula), List.of(list.getAll()));
+        return new BooleanAssignmentGroups(list);
     }
 
     @Override

@@ -30,7 +30,6 @@ import de.featjar.formula.assignment.BooleanAssignment;
 import de.featjar.formula.assignment.BooleanAssignmentGroups;
 import de.featjar.formula.assignment.BooleanSolution;
 import de.featjar.formula.io.csv.BooleanSolutionListCSVFormat;
-import java.util.List;
 import java.util.Optional;
 
 public class SolutionCommand extends ADdnnifeAnalysisCommand<BooleanSolution, BooleanAssignment> {
@@ -47,7 +46,7 @@ public class SolutionCommand extends ADdnnifeAnalysisCommand<BooleanSolution, Bo
 
     @Override
     protected Object getOuputObject(BooleanSolution assignment) {
-        return new BooleanAssignmentGroups(VariableMap.of(inputFormula), List.of(List.of(assignment)));
+        return new BooleanAssignmentGroups(VariableMap.of(inputFormula), assignment);
     }
 
     @Override

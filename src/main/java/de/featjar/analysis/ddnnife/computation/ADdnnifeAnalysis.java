@@ -26,7 +26,6 @@ import de.featjar.base.computation.AComputation;
 import de.featjar.base.computation.Computations;
 import de.featjar.base.computation.Dependency;
 import de.featjar.base.computation.IComputation;
-import de.featjar.formula.assignment.ABooleanAssignment;
 import de.featjar.formula.assignment.BooleanAssignment;
 import java.time.Duration;
 import java.util.List;
@@ -40,8 +39,8 @@ import java.util.List;
  */
 public abstract class ADdnnifeAnalysis<T> extends AComputation<T> {
     public static final Dependency<DdnnifeWrapper> DDNNIFE_WRAPPER = Dependency.newDependency(DdnnifeWrapper.class);
-    public static final Dependency<ABooleanAssignment> ASSUMED_ASSIGNMENT =
-            Dependency.newDependency(ABooleanAssignment.class);
+    public static final Dependency<BooleanAssignment> ASSUMED_ASSIGNMENT =
+            Dependency.newDependency(BooleanAssignment.class);
     public static final Dependency<Duration> SAT_TIMEOUT = Dependency.newDependency(Duration.class);
 
     public ADdnnifeAnalysis(IComputation<DdnnifeWrapper> ddnnifeWrapper, Object... computations) {
@@ -54,7 +53,7 @@ public abstract class ADdnnifeAnalysis<T> extends AComputation<T> {
 
     public DdnnifeWrapper setup(List<Object> dependencyList) {
         DdnnifeWrapper ddnnife = DDNNIFE_WRAPPER.get(dependencyList);
-        ABooleanAssignment assumedAssignment = ASSUMED_ASSIGNMENT.get(dependencyList);
+        BooleanAssignment assumedAssignment = ASSUMED_ASSIGNMENT.get(dependencyList);
         FeatJAR.log().debug("assuming %s", assumedAssignment);
         ddnnife.setAssumptions(assumedAssignment);
         ddnnife.setTimeout(SAT_TIMEOUT.get(dependencyList));

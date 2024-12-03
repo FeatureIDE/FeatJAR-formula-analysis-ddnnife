@@ -28,11 +28,11 @@ import de.featjar.base.computation.IComputation;
 import de.featjar.base.io.format.IFormat;
 import de.featjar.formula.assignment.BooleanAssignment;
 import de.featjar.formula.assignment.BooleanAssignmentGroups;
-import de.featjar.formula.assignment.BooleanSolutionList;
+import de.featjar.formula.assignment.BooleanAssignmentList;
 import de.featjar.formula.io.csv.BooleanSolutionListCSVFormat;
 import java.util.Optional;
 
-public class RandomSolutionsCommand extends ADdnnifeAnalysisCommand<BooleanSolutionList, BooleanAssignment> {
+public class RandomSolutionsCommand extends ADdnnifeAnalysisCommand<BooleanAssignmentList, BooleanAssignment> {
 
     public static final Option<Integer> SOLUTION_COUNT_OPTION = Option.newOption("limit", Option.IntegerParser) //
             .setDescription("Number of solutions to compute") //
@@ -44,14 +44,14 @@ public class RandomSolutionsCommand extends ADdnnifeAnalysisCommand<BooleanSolut
     }
 
     @Override
-    public IComputation<BooleanSolutionList> newAnalysis(OptionList optionParser, ComputeDdnnifeWrapper formula) {
+    public IComputation<BooleanAssignmentList> newAnalysis(OptionList optionParser, ComputeDdnnifeWrapper formula) {
         return formula.map(ComputeRandomSolutionsDdnnife::new)
                 .set(ComputeRandomSolutionsDdnnife.SOLUTION_COUNT, optionParser.get(SOLUTION_COUNT_OPTION))
                 .set(ComputeRandomSolutionsDdnnife.RANDOM_SEED, optionParser.get(RANDOM_SEED_OPTION));
     }
 
     @Override
-    protected Object getOuputObject(BooleanSolutionList list) {
+    protected Object getOuputObject(BooleanAssignmentList list) {
         return new BooleanAssignmentGroups(list);
     }
 
@@ -61,7 +61,7 @@ public class RandomSolutionsCommand extends ADdnnifeAnalysisCommand<BooleanSolut
     }
 
     @Override
-    public String serializeResult(BooleanSolutionList assignments) {
+    public String serializeResult(BooleanAssignmentList assignments) {
         return assignments.serialize();
     }
 

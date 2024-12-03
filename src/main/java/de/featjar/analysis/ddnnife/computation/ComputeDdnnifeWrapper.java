@@ -39,8 +39,8 @@ public final class ComputeDdnnifeWrapper extends AComputation<DdnnifeWrapper> {
     public static final Dependency<BooleanAssignmentGroups> FORMULA =
             Dependency.newDependency(BooleanAssignmentGroups.class);
 
-    public ComputeDdnnifeWrapper(IComputation<BooleanAssignmentGroups> booleanClauseList) {
-        super(booleanClauseList);
+    public ComputeDdnnifeWrapper(IComputation<BooleanAssignmentGroups> clauseList) {
+        super(clauseList);
     }
 
     protected ComputeDdnnifeWrapper(ComputeDdnnifeWrapper other) {
@@ -49,12 +49,12 @@ public final class ComputeDdnnifeWrapper extends AComputation<DdnnifeWrapper> {
 
     @Override
     public Result<DdnnifeWrapper> compute(List<Object> dependencyList, Progress progress) {
-        BooleanAssignmentGroups booleanClauseList = FORMULA.get(dependencyList);
+        BooleanAssignmentGroups clauseList = FORMULA.get(dependencyList);
         FeatJAR.log().debug("initializing SAT4J");
-        FeatJAR.log().debug("clauses %s", booleanClauseList);
+        FeatJAR.log().debug("clauses %s", clauseList);
 
         try {
-            return Result.of(new DdnnifeWrapper(booleanClauseList));
+            return Result.of(new DdnnifeWrapper(clauseList));
         } catch (Exception e) {
             return Result.empty(e);
         }

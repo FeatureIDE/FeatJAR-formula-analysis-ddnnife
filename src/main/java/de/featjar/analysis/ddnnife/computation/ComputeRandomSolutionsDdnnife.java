@@ -26,7 +26,7 @@ import de.featjar.base.computation.Dependency;
 import de.featjar.base.computation.IComputation;
 import de.featjar.base.computation.Progress;
 import de.featjar.base.data.Result;
-import de.featjar.formula.assignment.BooleanSolutionList;
+import de.featjar.formula.assignment.BooleanAssignmentList;
 import java.util.List;
 
 /**
@@ -34,7 +34,7 @@ import java.util.List;
  *
  * @author Sebastian Krieter
  */
-public class ComputeRandomSolutionsDdnnife extends ADdnnifeAnalysis<BooleanSolutionList> {
+public class ComputeRandomSolutionsDdnnife extends ADdnnifeAnalysis<BooleanAssignmentList> {
 
     public static final Dependency<Integer> SOLUTION_COUNT = Dependency.newDependency(Integer.class);
     public static final Dependency<Long> RANDOM_SEED = Dependency.newDependency(Long.class);
@@ -48,7 +48,7 @@ public class ComputeRandomSolutionsDdnnife extends ADdnnifeAnalysis<BooleanSolut
     }
 
     @Override
-    public Result<BooleanSolutionList> compute(List<Object> dependencyList, Progress progress) {
+    public Result<BooleanAssignmentList> compute(List<Object> dependencyList, Progress progress) {
         return setup(dependencyList)
                 .getRandomSolutions(SOLUTION_COUNT.get(dependencyList), RANDOM_SEED.get(dependencyList));
     }

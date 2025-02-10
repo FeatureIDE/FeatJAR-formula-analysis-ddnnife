@@ -31,11 +31,11 @@ public class DdnnifeBinary extends ABinary {
 
     @Override
     public String getExecutableName() {
-        return HostEnvironment.isWindows() ? "" : "ddnnife";
+        return HostEnvironment.isWindows() ? "ddnnife.exe" : "ddnnife";
     }
 
     @Override
     public LinkedHashSet<String> getResourceNames() {
-        return HostEnvironment.isWindows() ? Sets.of("") : Sets.of("ddnnife");
+        return HostEnvironment.isWindows() ? Sets.of("ddnnife.exe") : Sets.of("ddnnife");
     }
 }

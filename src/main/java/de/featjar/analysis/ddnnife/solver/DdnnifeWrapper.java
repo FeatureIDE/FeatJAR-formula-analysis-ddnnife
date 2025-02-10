@@ -97,30 +97,24 @@ public class DdnnifeWrapper implements ISolver, AutoCloseable {
 
         IO.save(formula, d4File, new BooleanAssignmentGroupsDimacsFormat());
 
-        D4Binary extension = FeatJAR.extension(D4Binary.class);
-        ProcessBuilder processBuilder = new ProcessBuilder(
-                extension.getExecutablePath().toString(),
-                "-i",
-                d4File.toString(),
-                "-m",
-                "ddnnf-compiler",
-                "--dump-ddnnf",
-                ddnifeFile.toString());
-        FeatJAR.log().debug(() -> String.join(" ", processBuilder.command()));
-        processBuilder.start().waitFor();
+        FeatJAR.extension(D4Binary.class)
+                .getProcess("-i", d4File.toString(), "-m", "ddnnf-compiler", "--dump-ddnnf", ddnifeFile.toString())
+                .run();
         Files.deleteIfExists(d4File);
     }
 
     private Process startProcess(Path ddnifeFile) {
         try {
             DdnnifeBinary extension = FeatJAR.extension(DdnnifeBinary.class);
-            return new ProcessBuilder(
-                            extension.getExecutablePath().toString(),
-                            "-t",
-                            Integer.toString(variableMap.getVariableCount()),
-                            ddnifeFile.toString(),
-                            "stream")
-                    .start();
+            ProcessBuilder processBuilder = new ProcessBuilder(
+                    extension.getExecutablePath().toString(),
+                    "-t",
+                    Integer.toString(variableMap.getVariableCount()),
+                    "-i",
+                    ddnifeFile.toString(),
+                    "stream");
+            FeatJAR.log().debug(String.join(" ", processBuilder.command()));
+            return processBuilder.start();
         } catch (IOException e) {
             FeatJAR.log().error(e);
             return null;

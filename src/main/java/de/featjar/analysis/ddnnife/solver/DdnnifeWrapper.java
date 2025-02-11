@@ -73,7 +73,14 @@ public class DdnnifeWrapper implements ISolver, AutoCloseable {
 
             computeDdnnf(formula);
 
-            process = startProcess(ddnifeFile);
+            process = FeatJAR.extension(DdnnifeBinary.class)
+                    .getProcess(
+                            "-t",
+                            Integer.toString(variableMap.getVariableCount()),
+                            "-i",
+                            ddnifeFile.toString(),
+                            "stream")
+                    .start();
 
             prcErr = new BufferedReader(new InputStreamReader(process.getErrorStream(), StandardCharsets.UTF_8));
             prcIn = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8));
@@ -101,24 +108,6 @@ public class DdnnifeWrapper implements ISolver, AutoCloseable {
                 .getProcess("-i", d4File.toString(), "-m", "ddnnf-compiler", "--dump-ddnnf", ddnifeFile.toString())
                 .run();
         Files.deleteIfExists(d4File);
-    }
-
-    private Process startProcess(Path ddnifeFile) {
-        try {
-            DdnnifeBinary extension = FeatJAR.extension(DdnnifeBinary.class);
-            ProcessBuilder processBuilder = new ProcessBuilder(
-                    extension.getExecutablePath().toString(),
-                    "-t",
-                    Integer.toString(variableMap.getVariableCount()),
-                    "-i",
-                    ddnifeFile.toString(),
-                    "stream");
-            FeatJAR.log().debug(String.join(" ", processBuilder.command()));
-            return processBuilder.start();
-        } catch (IOException e) {
-            FeatJAR.log().error(e);
-            return null;
-        }
     }
 
     public Result<String> compute(String query) {

@@ -84,11 +84,11 @@ public class D4Binary extends ABinary {
 
     @Override
     public Process getProcess(List<String> arguments, Duration timeout) {
-        if (!HostEnvironment.isWindows()) {
+        if (HostEnvironment.isWindows()) {
+            return new Process(getExecutablePath(), arguments, timeout);
+        } else {
             return new Process(
                     getExecutablePath(), arguments, Map.of("LD_LIBRARY_PATH", BINARY_DIRECTORY.toString()), timeout);
-        } else {
-            return new Process(getExecutablePath(), arguments, timeout);
         }
     }
 }

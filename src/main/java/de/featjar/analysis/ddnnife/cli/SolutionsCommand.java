@@ -60,7 +60,7 @@ public class SolutionsCommand extends ADdnnifeAnalysisCommand<BooleanAssignmentL
     }
 
     @Override
-    public String serializeResult(BooleanAssignmentList assignments) {
+    public String printResult(BooleanAssignmentList assignments) {
         return assignments.serialize();
     }
 

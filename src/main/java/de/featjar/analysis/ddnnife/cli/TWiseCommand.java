@@ -61,7 +61,7 @@ public class TWiseCommand extends ADdnnifeAnalysisCommand<BooleanAssignmentList,
     }
 
     @Override
-    public String serializeResult(BooleanAssignmentList assignments) {
+    public String printResult(BooleanAssignmentList assignments) {
         return assignments.serialize();
     }
 

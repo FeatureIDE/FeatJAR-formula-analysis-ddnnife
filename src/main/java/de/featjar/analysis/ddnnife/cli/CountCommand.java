@@ -41,7 +41,7 @@ public class CountCommand extends ADdnnifeAnalysisCommand<BigInteger, BooleanAss
     }
 
     @Override
-    public String serializeResult(BigInteger count) {
+    public String printResult(BigInteger count) {
         return count.toString();
     }
 

@@ -61,7 +61,7 @@ public class RandomSolutionsCommand extends ADdnnifeAnalysisCommand<BooleanAssig
     }
 
     @Override
-    public String serializeResult(BooleanAssignmentList assignments) {
+    public String printResult(BooleanAssignmentList assignments) {
         return assignments.serialize();
     }
 

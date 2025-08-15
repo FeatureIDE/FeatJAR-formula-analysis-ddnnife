@@ -26,13 +26,11 @@ import de.featjar.base.cli.Option;
 import de.featjar.base.cli.OptionList;
 import de.featjar.base.computation.IComputation;
 import de.featjar.base.io.format.IFormat;
-import de.featjar.formula.assignment.BooleanAssignment;
 import de.featjar.formula.assignment.BooleanAssignmentGroups;
-import de.featjar.formula.assignment.BooleanAssignmentList;
-import de.featjar.formula.io.csv.BooleanSolutionListCSVFormat;
+import de.featjar.formula.io.csv.BooleanAssignmentGroupsUngroupedCSVFormat;
 import java.util.Optional;
 
-public class TWiseCommand extends ADdnnifeAnalysisCommand<BooleanAssignmentList, BooleanAssignment> {
+public class TWiseCommand extends ADdnnifeAnalysisCommand<BooleanAssignmentGroups> {
 
     public static final Option<Integer> T_OPTION = Option.newOption("t", Option.IntegerParser) //
             .setDescription("Value of parameter t.") //
@@ -44,25 +42,16 @@ public class TWiseCommand extends ADdnnifeAnalysisCommand<BooleanAssignmentList,
     }
 
     @Override
-    public IComputation<BooleanAssignmentList> newAnalysis(OptionList optionParser, ComputeDdnnifeWrapper formula) {
+    public IComputation<BooleanAssignmentGroups> newAnalysis(OptionList optionParser, ComputeDdnnifeWrapper formula) {
         return formula.map(ComputeTWiseSampleDdnnife::new)
                 .set(ComputeTWiseSampleDdnnife.T, optionParser.get(T_OPTION))
-                .set(ComputeTWiseSampleDdnnife.RANDOM_SEED, optionParser.get(RANDOM_SEED_OPTION));
+                .set(ComputeTWiseSampleDdnnife.RANDOM_SEED, optionParser.get(RANDOM_SEED_OPTION))
+                .mapResult(TWiseCommand.class, "group", BooleanAssignmentGroups::new);
     }
 
     @Override
-    protected Object getOuputObject(BooleanAssignmentList list) {
-        return new BooleanAssignmentGroups(list);
-    }
-
-    @Override
-    protected IFormat<?> getOuputFormat() {
-        return new BooleanSolutionListCSVFormat();
-    }
-
-    @Override
-    public String printResult(BooleanAssignmentList assignments) {
-        return assignments.serialize();
+    protected IFormat<BooleanAssignmentGroups> getOuputFormat(OptionList optionaParser) {
+        return new BooleanAssignmentGroupsUngroupedCSVFormat();
     }
 
     @Override

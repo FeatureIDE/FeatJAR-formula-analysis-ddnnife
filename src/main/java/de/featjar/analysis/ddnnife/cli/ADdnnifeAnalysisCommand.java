@@ -27,13 +27,14 @@ import de.featjar.base.cli.OptionList;
 import de.featjar.base.computation.Computations;
 import de.featjar.base.computation.IComputation;
 import de.featjar.base.io.IO;
+import de.featjar.formula.VariableMap;
 import de.featjar.formula.assignment.ComputeBooleanRepresentation;
 import de.featjar.formula.computation.ComputeCNFFormula;
 import de.featjar.formula.computation.ComputeNNFFormula;
 import de.featjar.formula.io.FormulaFormats;
 import de.featjar.formula.structure.IFormula;
 
-public abstract class ADdnnifeAnalysisCommand<T, U> extends AAnalysisCommand<T> {
+public abstract class ADdnnifeAnalysisCommand<T> extends AAnalysisCommand<T> {
 
     /**
      * Option for setting the seed for the pseudo random generator.
@@ -43,6 +44,7 @@ public abstract class ADdnnifeAnalysisCommand<T, U> extends AAnalysisCommand<T> 
             .setDefaultValue(1L);
 
     protected IFormula inputFormula;
+    protected VariableMap variableMap;
 
     @Override
     protected IComputation<T> newComputation(OptionList optionParser) {
@@ -56,6 +58,7 @@ public abstract class ADdnnifeAnalysisCommand<T, U> extends AAnalysisCommand<T> 
                         .map(ComputeNNFFormula::new)
                         .map(ComputeCNFFormula::new)
                         .map(ComputeBooleanRepresentation::new)
+                        .peekResult(getClass(), "variableMap", clauseList -> variableMap = clauseList.getVariableMap())
                         .map(ComputeDdnnifeWrapper::new));
     }
 

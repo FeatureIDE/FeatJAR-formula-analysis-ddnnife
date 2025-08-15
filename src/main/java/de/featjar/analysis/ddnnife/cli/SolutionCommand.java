@@ -25,14 +25,11 @@ import de.featjar.analysis.ddnnife.computation.ComputeSolutionDdnnife;
 import de.featjar.base.cli.OptionList;
 import de.featjar.base.computation.IComputation;
 import de.featjar.base.io.format.IFormat;
-import de.featjar.formula.VariableMap;
-import de.featjar.formula.assignment.BooleanAssignment;
 import de.featjar.formula.assignment.BooleanAssignmentGroups;
-import de.featjar.formula.assignment.BooleanSolution;
-import de.featjar.formula.io.csv.BooleanSolutionListCSVFormat;
+import de.featjar.formula.io.csv.BooleanAssignmentGroupsUngroupedCSVFormat;
 import java.util.Optional;
 
-public class SolutionCommand extends ADdnnifeAnalysisCommand<BooleanSolution, BooleanAssignment> {
+public class SolutionCommand extends ADdnnifeAnalysisCommand<BooleanAssignmentGroups> {
 
     @Override
     public Optional<String> getDescription() {
@@ -40,23 +37,14 @@ public class SolutionCommand extends ADdnnifeAnalysisCommand<BooleanSolution, Bo
     }
 
     @Override
-    public IComputation<BooleanSolution> newAnalysis(OptionList optionParser, ComputeDdnnifeWrapper formula) {
-        return formula.map(ComputeSolutionDdnnife::new);
+    public IComputation<BooleanAssignmentGroups> newAnalysis(OptionList optionParser, ComputeDdnnifeWrapper formula) {
+        return formula.map(ComputeSolutionDdnnife::new)
+                .mapResult(CoreCommand.class, "group", a -> new BooleanAssignmentGroups(variableMap, a));
     }
 
     @Override
-    protected Object getOuputObject(BooleanSolution assignment) {
-        return new BooleanAssignmentGroups(VariableMap.of(inputFormula), assignment);
-    }
-
-    @Override
-    protected IFormat<?> getOuputFormat() {
-        return new BooleanSolutionListCSVFormat();
-    }
-
-    @Override
-    public String printResult(BooleanSolution assignment) {
-        return assignment.print();
+    protected IFormat<BooleanAssignmentGroups> getOuputFormat(OptionList optionaParser) {
+        return new BooleanAssignmentGroupsUngroupedCSVFormat();
     }
 
     @Override

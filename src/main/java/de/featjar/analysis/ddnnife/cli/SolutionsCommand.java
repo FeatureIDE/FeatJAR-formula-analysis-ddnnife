@@ -26,13 +26,11 @@ import de.featjar.base.cli.Option;
 import de.featjar.base.cli.OptionList;
 import de.featjar.base.computation.IComputation;
 import de.featjar.base.io.format.IFormat;
-import de.featjar.formula.assignment.BooleanAssignment;
 import de.featjar.formula.assignment.BooleanAssignmentGroups;
-import de.featjar.formula.assignment.BooleanAssignmentList;
-import de.featjar.formula.io.csv.BooleanSolutionListCSVFormat;
+import de.featjar.formula.io.csv.BooleanAssignmentGroupsUngroupedCSVFormat;
 import java.util.Optional;
 
-public class SolutionsCommand extends ADdnnifeAnalysisCommand<BooleanAssignmentList, BooleanAssignment> {
+public class SolutionsCommand extends ADdnnifeAnalysisCommand<BooleanAssignmentGroups> {
 
     public static final Option<Integer> SOLUTION_COUNT_OPTION = Option.newOption("limit", Option.IntegerParser) //
             .setDescription("Number of solutions to compute") //
@@ -44,24 +42,15 @@ public class SolutionsCommand extends ADdnnifeAnalysisCommand<BooleanAssignmentL
     }
 
     @Override
-    public IComputation<BooleanAssignmentList> newAnalysis(OptionList optionParser, ComputeDdnnifeWrapper formula) {
+    public IComputation<BooleanAssignmentGroups> newAnalysis(OptionList optionParser, ComputeDdnnifeWrapper formula) {
         return formula.map(ComputeSolutionsDdnnife::new)
-                .set(ComputeSolutionsDdnnife.SOLUTION_COUNT, optionParser.get(SOLUTION_COUNT_OPTION));
+                .set(ComputeSolutionsDdnnife.SOLUTION_COUNT, optionParser.get(SOLUTION_COUNT_OPTION))
+                .mapResult(SolutionsCommand.class, "group", BooleanAssignmentGroups::new);
     }
 
     @Override
-    protected Object getOuputObject(BooleanAssignmentList list) {
-        return new BooleanAssignmentGroups(list);
-    }
-
-    @Override
-    protected IFormat<?> getOuputFormat() {
-        return new BooleanSolutionListCSVFormat();
-    }
-
-    @Override
-    public String printResult(BooleanAssignmentList assignments) {
-        return assignments.serialize();
+    protected IFormat<BooleanAssignmentGroups> getOuputFormat(OptionList optionaParser) {
+        return new BooleanAssignmentGroupsUngroupedCSVFormat();
     }
 
     @Override

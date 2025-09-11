@@ -76,7 +76,7 @@ public class DdnnifeWrapper implements ISolver, AutoCloseable {
             process = FeatJAR.extension(DdnnifeBinary.class)
                     .getProcess(
                             "-t",
-                            Integer.toString(variableMap.getVariableCount()),
+                            Integer.toString(variableMap.size()),
                             "-i",
                             ddnifeFile.toString(),
                             "stream")
@@ -204,7 +204,7 @@ public class DdnnifeWrapper implements ISolver, AutoCloseable {
 
     private List<int[]> splitLiterals(int[] literals) {
         ArrayList<int[]> list = new ArrayList<>();
-        int variableCount = variableMap.getVariableCount();
+        int variableCount = variableMap.size();
         for (int i = 0; i < literals.length; i += variableCount) {
             int[] literalsPart = new int[variableCount];
             System.arraycopy(literals, i, literalsPart, 0, variableCount);
